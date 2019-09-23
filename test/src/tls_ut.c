@@ -19,7 +19,7 @@
 
 extern void context_test (uintptr_t);
 
-static __noreturn__ int tls_test (uintptr_t magic)
+static __noreturn int tls_test (uintptr_t magic)
     {
     task_tls_set (current, 0, magic);
 

@@ -38,7 +38,7 @@ static void __top_print (struct profile_data * data, uintptr_t arg)
                   name, xx, yy);
     }
 
-static __noreturn__ int __top_task (uintptr_t arg)
+static __noreturn int __top_task (uintptr_t arg)
     {
     cmder_t * cmder = (cmder_t *) arg;
 

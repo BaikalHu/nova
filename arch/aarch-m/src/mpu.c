@@ -20,7 +20,6 @@
 #include <compiler.h>
 #include <task.h>
 #include <heap.h>
-#include <mem.h>
 #include <init.h>
 #include <syscall.h>
 #include <bug.h>
@@ -106,7 +105,7 @@ static int                mpu_tls_slot;
 
 /* inlines */
 
-static __always_inline__ uint32_t __rasr_size_calc (uint32_t size)
+static __always_inline uint32_t __rasr_size_calc (uint32_t size)
     {
     return (uint32_t) ((32 - __clz_u32 (size - 1) - 1) << 1);
     }
@@ -215,19 +214,19 @@ task_id mpu_task_spawn (const char * name, uint8_t prio, uint32_t options,
 
     if (unlikely (!mpu_supported))
         {
-        errno_set (ERRNO_MPU_ILLEGAL_OPERATION);
+        errno = ERRNO_MPU_ILLEGAL_OPERATION;
         return NULL;
         }
 
     if (unlikely (regions == NULL))
         {
-        errno_set (ERRNO_MPU_ILLEGAL_REGIONS);
+        errno = ERRNO_MPU_ILLEGAL_REGIONS;
         return NULL;
         }
 
     if (unlikely (__verify_regions (regions)))
         {
-        errno_set (ERRNO_MPU_ILLEGAL_REGIONS);
+        errno = ERRNO_MPU_ILLEGAL_REGIONS;
         return NULL;
         }
 
@@ -337,13 +336,13 @@ int mpu_region_add (task_id task, uint32_t addr, uint32_t size, uint32_t attr)
 
     if (unlikely (mpu_ctx == NULL))
         {
-        errno_set (ERRNO_MPU_ILLEGAL_OPERATION);
+        errno = ERRNO_MPU_ILLEGAL_OPERATION;
         return -1;
         }
 
     if (unlikely (__verify_region (addr, size, attr) != 0))
         {
-        errno_set (ERRNO_MPU_ILLEGAL_REGIONS);
+        errno = ERRNO_MPU_ILLEGAL_REGIONS;
         return -1;
         }
 
@@ -384,7 +383,7 @@ static int mpu_init (void)
     if (mpu_regions == 0)
         {
         WARN ("CPU does not support MPU!");
-        errno_set (ERRNO_MPU_UNAVAILABLE);
+        errno = ERRNO_MPU_UNAVAILABLE;
         return -1;
         }
 

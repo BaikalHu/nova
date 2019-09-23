@@ -21,7 +21,7 @@
  * return: NA, will not return
  */
 
-__naked__ void context_test (void)
+__naked void context_test (void)
     {
     __asm__ __volatile__
         (

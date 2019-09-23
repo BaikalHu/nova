@@ -23,7 +23,7 @@ static void loop (uintptr_t magic)
     context_test (magic);
     }
 
-static __noreturn__ void delay (void)
+static __noreturn void delay (void)
     {
     while (1)
         {

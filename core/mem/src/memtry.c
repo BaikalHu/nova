@@ -37,18 +37,18 @@ int mem_try (void * dst, void * src, int order)
     {
     if (unlikely (order > MEMTRY_MAX_ORDER))
         {
-        errno_set (ERRNO_MEMTRY_ILLEGAL_ORDER);
+        errno = ERRNO_MEMTRY_ILLEGAL_ORDER;
         return -1;
         }
 
-    errno_set (ERRNO_MEMTRY_NO_ACCESS);
+    errno = ERRNO_MEMTRY_NO_ACCESS;
 
     if (mem_try_arch (dst, src, order) != 0)
         {
         return -1;
         }
 
-    errno_set (0);
+    errno = 0;
 
     return 0;
     }

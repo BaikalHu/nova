@@ -1,2 +1,2 @@
-src-y += src/*.c
-inc-g += h
+src-y   += src/*.c
+inc-g-y += h

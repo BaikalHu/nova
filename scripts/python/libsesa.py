@@ -81,16 +81,14 @@ group_tail = '''\
     </folder>
 '''
 
-file_entry_bdf_n = '''\
-      <file file_name="{0}" />
-'''
-
-file_entry_bdf_y = '''\
+file_entry = '''\
       <file file_name="{0}">
         <configuration
           Name="Common"
           c_user_include_directories="{1}"
-          c_additional_options="{2}"/>
+          c_additional_options="{2}"
+          build_object_file_name="$(IntDir)/{3}/$(InputName)$(OBJ)"
+          build_dependency_file_name="$(IntDir)/{3}/$(InputName).d" />
       </file>
 '''
 
@@ -142,10 +140,8 @@ def add_files (f, bdf_ini):
                 f.write (group_tail)
             f.write (group_head.format (group))
 
-        if not flags and not inc:
-            f.write (file_entry_bdf_n.format (src))
-        else:
-            f.write (file_entry_bdf_y.format (src, get_inc (inc), get_flags (flags)))
+        f.write (file_entry.format (src, get_inc (inc), get_flags (flags), \
+                                    os.path.dirname (src.replace ("../", ""))))
 
         last_group = group
 

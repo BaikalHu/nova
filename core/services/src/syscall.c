@@ -18,18 +18,18 @@
 #include <compiler.h>
 #include <syscall.h>
 
-__weak__ const struct syscall_table syscall_table_task     = {0, NULL};
-__weak__ const struct syscall_table syscall_table_mutex    = {0, NULL};
-__weak__ const struct syscall_table syscall_table_sem      = {0, NULL};
-__weak__ const struct syscall_table syscall_table_event    = {0, NULL};
-__weak__ const struct syscall_table syscall_table_mq       = {0, NULL};
-__weak__ const struct syscall_table syscall_table_heap     = {0, NULL};
-__weak__ const struct syscall_table syscall_table_mempool  = {0, NULL};
-__weak__ const struct syscall_table syscall_table_memtry   = {0, NULL};
-__weak__ const struct syscall_table syscall_table_errno    = {0, NULL};
-__weak__ const struct syscall_table syscall_table_kprintf  = {0, NULL};
-__weak__ const struct syscall_table syscall_table_mpu      = {0, NULL};
-__weak__ const struct syscall_table syscall_table_customer = {0, NULL};
+__weak const struct syscall_table syscall_table_task     = {0, NULL};
+__weak const struct syscall_table syscall_table_mutex    = {0, NULL};
+__weak const struct syscall_table syscall_table_sem      = {0, NULL};
+__weak const struct syscall_table syscall_table_event    = {0, NULL};
+__weak const struct syscall_table syscall_table_mq       = {0, NULL};
+__weak const struct syscall_table syscall_table_heap     = {0, NULL};
+__weak const struct syscall_table syscall_table_mempool  = {0, NULL};
+__weak const struct syscall_table syscall_table_memtry   = {0, NULL};
+__weak const struct syscall_table syscall_table_errno    = {0, NULL};
+__weak const struct syscall_table syscall_table_kprintf  = {0, NULL};
+__weak const struct syscall_table syscall_table_mpu      = {0, NULL};
+__weak const struct syscall_table syscall_table_customer = {0, NULL};
 
 /**
  * syscall_get_entry - errno set routine
@@ -79,7 +79,7 @@ uintptr_t syscall_get_entry (syscall_id sid)
             entry = &syscall_table_customer;
             break;
         default:
-            errno_set (ERRNO_SYSCALL_ILLEGAL_MID);
+            errno = ERRNO_SYSCALL_ILLEGAL_MID;
             return (uintptr_t) NULL;
         }
 
@@ -87,7 +87,7 @@ uintptr_t syscall_get_entry (syscall_id sid)
 
     if (rid >= entry->nr_entries)
         {
-        errno_set (ERRNO_SYSCALL_ILLEGAL_RID);
+        errno = ERRNO_SYSCALL_ILLEGAL_RID;
         return (uintptr_t) NULL;
         }
 

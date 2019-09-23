@@ -27,7 +27,7 @@
  * return: NA, will not return
  */
 
-__naked__ void sched_start (void)
+__naked void sched_start (void)
     {
     __asm__ __volatile__
         (
@@ -79,7 +79,7 @@ __naked__ void sched_start (void)
  * return: NA
  */
 
-__naked__ void pendsv_handler (void)
+__naked void pendsv_handler (void)
     {
     __asm__ __volatile__
         (
@@ -202,7 +202,7 @@ __naked__ void pendsv_handler (void)
  *       here, and *NEVER* invoke this routine out critical_exec!
  */
 
-__naked__ int schedule (int ra)
+__naked int schedule (int ra)
     {
     __asm__ __volatile__
         (

@@ -24,7 +24,7 @@
 
 unsigned int int_cnt = 0;
 
-__section__ (stack) __unused__ char irq_stack [CONFIG_IRQ_STACK_SIZE];
+__section__ (stack) __unused char irq_stack [CONFIG_IRQ_STACK_SIZE];
 
 /* statics */
 
@@ -71,13 +71,13 @@ int hal_int_connect (unsigned int irq, hal_int_handler_t handler, uintptr_t arg)
     {
     if (unlikely (irq >= CONFIG_NR_IRQS))
         {
-        errno_set (ERRNO_HAL_INTC_ILLEGAL_IRQN);
+        errno = ERRNO_HAL_INTC_ILLEGAL_IRQN;
         return -1;
         }
 
     if (unlikely (hal_int_vector [irq].handler != NULL))
         {
-        errno_set (ERRNO_HAL_INTC_ILLEGAL_OPERATION);
+        errno = ERRNO_HAL_INTC_ILLEGAL_OPERATION;
         return -1;
         }
 
@@ -98,7 +98,7 @@ int hal_int_disconnect (unsigned int irq)
     {
     if (unlikely (irq >= CONFIG_NR_IRQS))
         {
-        errno_set (ERRNO_HAL_INTC_ILLEGAL_IRQN);
+        errno = ERRNO_HAL_INTC_ILLEGAL_IRQN;
         return -1;
         }
 
@@ -119,7 +119,7 @@ int hal_int_setprio (unsigned int irq, unsigned int prio)
     {
     if (unlikely (hal_int_methods == NULL || hal_int_methods->setprio == NULL))
         {
-        errno_set (ERRNO_HAL_INTC_ILLEGAL_OPERATION);
+        errno = ERRNO_HAL_INTC_ILLEGAL_OPERATION;
         return -1;
         }
 
@@ -137,7 +137,7 @@ int hal_int_enable (unsigned int irq)
     {
     if (unlikely (hal_int_methods == NULL || hal_int_methods->enable == NULL))
         {
-        errno_set (ERRNO_HAL_INTC_ILLEGAL_OPERATION);
+        errno = ERRNO_HAL_INTC_ILLEGAL_OPERATION;
         return -1;
         }
 
@@ -157,7 +157,7 @@ int hal_int_disable (unsigned int irq)
     {
     if (unlikely (hal_int_methods == NULL || hal_int_methods->disable == NULL))
         {
-        errno_set (ERRNO_HAL_INTC_ILLEGAL_OPERATION);
+        errno = ERRNO_HAL_INTC_ILLEGAL_OPERATION;
         return -1;
         }
 
@@ -192,7 +192,7 @@ int hal_int_register (const hal_int_methods_t * methods)
     {
     if (unlikely (methods == NULL || methods->enable == NULL))
         {
-        errno_set (ERRNO_HAL_INTC_ILLEGAL_OPERATION);
+        errno = ERRNO_HAL_INTC_ILLEGAL_OPERATION;
         return -1;
         }
 

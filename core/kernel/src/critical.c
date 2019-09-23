@@ -38,18 +38,18 @@ struct critical_q critical_q = {0};
 
 /* inlines */
 
-static __always_inline__ bool __critical_q_full (void)
+static __always_inline bool __critical_q_full (void)
     {
     return (critical_q.tail_idx - critical_q.head_idx) == CRITICAL_JOB_Q_SLOTS;
     }
 
-static __always_inline__ void __critical_enter (void)
+static __always_inline void __critical_enter (void)
     {
     critical_q.in_critical = true;
     mb ();
     }
 
-static __always_inline__ void __critical_exit (void)
+static __always_inline void __critical_exit (void)
     {
     critical_q.in_critical = false;
     mb ();
@@ -75,8 +75,8 @@ static inline int __critical_exec (int (* job) (uintptr_t, uintptr_t),
  * return: 0 on success, -1 if queue full
  */
 
-static __always_inline__ int __critical_q_add (int (* job) (uintptr_t, uintptr_t),
-                                               uintptr_t arg1, uintptr_t arg2)
+static __always_inline int __critical_q_add (int (* job) (uintptr_t, uintptr_t),
+                                             uintptr_t arg1, uintptr_t arg2)
     {
     unsigned int  idx;
     unsigned long key;
@@ -97,7 +97,7 @@ static __always_inline__ int __critical_q_add (int (* job) (uintptr_t, uintptr_t
 
     if (unlikely (idx == (unsigned int) -1))
         {
-        errno_set (ERRNO_CRITICAL_QUEUE_FULL);
+        errno = ERRNO_CRITICAL_QUEUE_FULL;
         return -1;
         }
 
@@ -129,8 +129,8 @@ static __always_inline__ int __critical_q_add (int (* job) (uintptr_t, uintptr_t
  * return: return value of the job
  */
 
-__weak__ int critical_exec (int (* job) (uintptr_t, uintptr_t),
-                            uintptr_t arg1, uintptr_t arg2)
+__weak int critical_exec (int (* job) (uintptr_t, uintptr_t),
+                          uintptr_t arg1, uintptr_t arg2)
     {
     int                   ret;
     unsigned long         key;
@@ -218,7 +218,7 @@ int do_critical (int (* job) (uintptr_t, uintptr_t),
     return critical_exec (job, arg1, arg2);
     }
 
-static __always_inline__ bool __no_sleepable (void)
+static __always_inline bool __no_sleepable (void)
     {
     return current == NULL || task_lock_cnt || int_context () || int_locked () ||
            (current->option & TASK_OPTION_NO_BLOCK) || critical_q.in_critical;
@@ -238,7 +238,7 @@ int do_critical_might_sleep (int (* job) (uintptr_t, uintptr_t),
     {
     if (unlikely (__no_sleepable ()))
         {
-        errno_set (ERRNO_CRITICAL_ILLEGAL_OPERATION);
+        errno = ERRNO_CRITICAL_ILLEGAL_OPERATION;
         return -1;
         }
 
@@ -259,7 +259,7 @@ int do_critical_non_irq (int (* job) (uintptr_t, uintptr_t),
     {
     if (unlikely (int_context ()))
         {
-        errno_set (ERRNO_CRITICAL_ILLEGAL_OPERATION);
+        errno = ERRNO_CRITICAL_ILLEGAL_OPERATION;
         return -1;
         }
 

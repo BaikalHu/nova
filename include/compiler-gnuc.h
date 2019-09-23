@@ -37,40 +37,52 @@ extern "C" {
 #endif
 
 /*
- * __unused__ - create a "unused" symbol
+ * __unused - create a "unused" symbol
  */
 
-#define __unused__                      __attribute__ ((unused))
+#ifndef __unused
+#define __unused                        __attribute__ ((unused))
+#endif
 
 /*
- * __noreturn__ - create a non-return routine
+ * __noreturn - create a non-return routine
  */
 
-#define __noreturn__                    __attribute__ ((noreturn))
+#ifndef __noreturn
+#define __noreturn                      __attribute__ ((noreturn))
+#endif
 
 /*
- * __weak__ - create a weak symbol
+ * __weak - create a weak symbol
  */
 
-#define __weak__                        __attribute__ ((weak))
+#ifndef __weak
+#define __weak                          __attribute__ ((weak))
+#endif
 
 /*
- * __naked__ - create a naked asm function
+ * __naked - create a naked asm function
  */
 
-#define __naked__                       __attribute__ ((naked))
+#ifndef __naked
+#define __naked                         __attribute__ ((naked))
+#endif
 
 /*
- * __always_inline__ - create always inlined function
+ * __always_inline - create always inlined function
  */
 
-#define __always_inline__               __attribute__ ((always_inline, unused)) inline
+#ifndef __always_inline
+#define __always_inline                 __attribute__ ((always_inline, unused)) inline
+#endif
 
 /*
- * __no_inline__ - create no inlined function
+ * __noinline - create no inlined function
  */
 
-#define __noinline__                    __attribute__ ((noinline))
+#ifndef __noinline
+#define __noinline                      __attribute__ ((noinline))
+#endif
 
 /*
  * dummy - create a non-used variable
@@ -78,7 +90,7 @@ extern "C" {
  * @n: the id of this variable, used in the variable name
  */
 
-#define dummy(type, n)                  type dummy##n __unused__
+#define dummy(type, n)                  type dummy##n __unused
 
 /*
  * likely - a condition is very likely to be true.
@@ -150,7 +162,7 @@ extern "C" {
  * note: if x is 0, the result is undefined
  */
 
-static __always_inline__ int __clz_u32 (uint32_t x)
+static __always_inline int __clz_u32 (uint32_t x)
     {
     return __builtin_clz_u32 ((unsigned __builtin_int32_t) x);
     }
@@ -162,7 +174,7 @@ static __always_inline__ int __clz_u32 (uint32_t x)
  * note: if x is 0, the result is undefined
  */
 
-static __always_inline__ int __ctz_u32 (uint32_t x)
+static __always_inline int __ctz_u32 (uint32_t x)
     {
     return __builtin_ctz_u32 ((unsigned __builtin_int32_t) x);
     }
@@ -178,7 +190,7 @@ static __always_inline__ int __ctz_u32 (uint32_t x)
  * note: if x is 0, the result is undefined
  */
 
-static __always_inline__ int __clz_u64 (uint64_t x)
+static __always_inline int __clz_u64 (uint64_t x)
     {
     return __builtin_clzll ((unsigned long long) x);
     }
@@ -190,7 +202,7 @@ static __always_inline__ int __clz_u64 (uint64_t x)
  * note: if x is 0, the result is undefined
  */
 
-static __always_inline__ int __ctz_u64 (uint64_t x)
+static __always_inline int __ctz_u64 (uint64_t x)
     {
     return __builtin_ctzll ((unsigned long long) x);
     }

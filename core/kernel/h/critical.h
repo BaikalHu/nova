@@ -76,7 +76,7 @@ extern bool sleepable               (void);
 
 /* inlines */
 
-static __always_inline__ bool in_critical (void)
+static __always_inline bool in_critical (void)
     {
     return critical_q.in_critical;
     }

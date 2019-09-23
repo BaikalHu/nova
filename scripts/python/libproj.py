@@ -155,8 +155,8 @@ def main ():
         else:
             f.write ("src-y")
         f.write ("    := " + " ".join (list (set (project ["src"]))) + "\n")
-        f.write ("inc-l    := " + " ".join (list (set (project ["inc-l"]))) + "\n")
-        f.write ("inc-g    := " + " ".join (list (set (project ["inc-g"]))) + "\n")
+        f.write ("inc-l-y  := " + " ".join (list (set (project ["inc-l"]))) + "\n")
+        f.write ("inc-g-y  := " + " ".join (list (set (project ["inc-g"]))) + "\n")
         f.write ("cflags-l := " + " ".join (list (set (project ["cflags-l"]))) + "\n")
         f.write ("cflags-g := " + " ".join (list (set (project ["cflags-g"]))) + "\n")
 

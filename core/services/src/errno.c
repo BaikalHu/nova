@@ -25,38 +25,19 @@
 
 /* locals */
 
-static uint32_t __sys_errno;
+static uint32_t __sys_error;
 
 /**
- * errno_set - errno set routine
- * @errno: the errno
- *
- * return: NA
- */
-
-void errno_set (uint32_t errno)
-    {
-    if (int_context () || current == NULL)
-        {
-        __sys_errno = errno;
-        }
-    else
-        {
-        task_errno_set (current, errno);
-        }
-    }
-
-/**
- * errno_get - errno get routine
+ * errno_get - errno address get routine
  *
  * return: 0 on success, negtive value on error
  */
 
-uint32_t errno_get (void)
+uint32_t * errno_get (void)
     {
     if (int_context () || current == NULL)
         {
-        return __sys_errno;
+        return &__sys_error;
         }
     else
         {
@@ -67,7 +48,6 @@ uint32_t errno_get (void)
 #ifdef CONFIG_SYSCALL
 static const uintptr_t syscall_entries_errno [] =
     {
-    (uintptr_t) errno_set,
     (uintptr_t) errno_get,
     };
 

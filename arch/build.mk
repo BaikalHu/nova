@@ -1,2 +1,2 @@
-dir-y += aarch-m
-inc-g += h
+dir-y   += aarch-m
+inc-g-y += h

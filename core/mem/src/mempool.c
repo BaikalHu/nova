@@ -46,7 +46,7 @@ mempool_id mempool_create (size_t size, size_t items, char * buff)
     {
     if (unlikely (size == 0 || items == 0 || items >= UINT_MAX))
         {
-        errno_set (ERRNO_MEMPOOL_ILLEGAL_PARA);
+        errno = ERRNO_MEMPOOL_ILLEGAL_PARA;
         return NULL;
         }
 
@@ -80,7 +80,7 @@ int mempool_destroy (mempool_id pool)
     {
     if (unlikely (pool == NULL))
         {
-        errno_set (ERRNO_MEMPOOL_ILLEGAL_ID);
+        errno = ERRNO_MEMPOOL_ILLEGAL_ID;
         return -1;
         }
 
@@ -100,7 +100,7 @@ char * mempool_alloc (mempool_id pool)
 
     if (unlikely (pool == NULL))
         {
-        errno_set (ERRNO_MEMPOOL_ILLEGAL_POOL);
+        errno = ERRNO_MEMPOOL_ILLEGAL_POOL;
         return NULL;
         }
 
@@ -145,7 +145,7 @@ int mempool_free (mempool_id pool, char * item)
     {
     if (unlikely (pool == NULL))
         {
-        errno_set (ERRNO_MEMPOOL_ILLEGAL_POOL);
+        errno = ERRNO_MEMPOOL_ILLEGAL_POOL;
         return -1;
         }
 
@@ -165,7 +165,7 @@ int mempool_free (mempool_id pool, char * item)
                   ((size_t) (item - pool->buff) % pool->item_size != 0)))
         {
         mutex_unlock (&pool->lock);
-        errno_set (ERRNO_MEMPOOL_ILLEGAL_OPERATION);
+        errno = ERRNO_MEMPOOL_ILLEGAL_OPERATION;
         obj_unprotect (&pool->obj);
 
         return -1;

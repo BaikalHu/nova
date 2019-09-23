@@ -49,7 +49,7 @@ typedef int (* init_pfn) (void);
 #define MODULE_INIT(group, init)    \
     const init_pfn __init_##group##_##init __section__ (init_##group) = init
 
-extern  __noreturn__ void           kernel_init (void);
+extern  __noreturn void             kernel_init (void);
 
 #ifdef __cplusplus
 }

@@ -30,7 +30,7 @@ extern "C" {
  * return: the original primask
  */
 
-static __always_inline__ unsigned long int_lock (void)
+static __always_inline unsigned long int_lock (void)
     {
     unsigned long flags;
 
@@ -52,7 +52,7 @@ static __always_inline__ unsigned long int_lock (void)
  * return: the original primask
  */
 
-static __always_inline__ unsigned long int_unlock (void)
+static __always_inline unsigned long int_unlock (void)
     {
     unsigned long flags;
 
@@ -75,7 +75,7 @@ static __always_inline__ unsigned long int_unlock (void)
  * return: NA
  */
 
-static __always_inline__ void int_restore (unsigned long flags)
+static __always_inline void int_restore (unsigned long flags)
     {
     __asm__ __volatile__
         (
@@ -92,7 +92,7 @@ static __always_inline__ void int_restore (unsigned long flags)
  * return: true or false
  */
 
-static __always_inline__ bool int_locked (void)
+static __always_inline bool int_locked (void)
     {
     unsigned long flags;
 
@@ -111,7 +111,7 @@ static __always_inline__ bool int_locked (void)
  * return: true or false
  */
 
-static __always_inline__ bool int_context_arch (void)
+static __always_inline bool int_context_arch (void)
     {
 #if   defined (__CC_ARM)
 	register uint32_t ipsr __asm ("ipsr");

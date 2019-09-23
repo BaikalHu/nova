@@ -28,7 +28,7 @@ extern "C" {
  * return: NA
  */
 
-static __always_inline__ void mb (void)
+static __always_inline void mb (void)
     {
     __asm__ __volatile__ ("dmb #0xf" : : : "memory");
     }
@@ -39,7 +39,7 @@ static __always_inline__ void mb (void)
  * return: NA
  */
 
-static __always_inline__ void rmb (void)
+static __always_inline void rmb (void)
     {
     __asm__ __volatile__ ("dmb #0xf" : : : "memory");
     }
@@ -50,7 +50,7 @@ static __always_inline__ void rmb (void)
  * return: NA
  */
 
-static __always_inline__ void wmb (void)
+static __always_inline void wmb (void)
     {
     __asm__ __volatile__ ("dmb #0xf" : : : "memory");
     }
@@ -61,7 +61,7 @@ static __always_inline__ void wmb (void)
  * return: NA
  */
 
-static __always_inline__ void dsb (void)
+static __always_inline void dsb (void)
     {
     __asm__ __volatile__ ("dsb #0xf" : : : "memory");
     }
@@ -72,7 +72,7 @@ static __always_inline__ void dsb (void)
  * return: NA
  */
 
-static __always_inline__ void isb (void)
+static __always_inline void isb (void)
     {
     __asm__ __volatile__ ("isb #0xf" : : : "memory");
     }

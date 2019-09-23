@@ -84,37 +84,37 @@ struct stat
 
 /* inlines */
 
-static __always_inline__ bool __stat_is_blk (uint32_t st_mode)
+static __always_inline bool __stat_is_blk (uint32_t st_mode)
     {
     return (st_mode & S_IFMT) == S_IFBLK;
     }
 
-static __always_inline__ bool __stat_is_chr (uint32_t st_mode)
+static __always_inline bool __stat_is_chr (uint32_t st_mode)
     {
     return (st_mode & S_IFMT) == S_IFCHR;
     }
 
-static __always_inline__ bool __stat_is_dir (uint32_t st_mode)
+static __always_inline bool __stat_is_dir (uint32_t st_mode)
     {
     return (st_mode & S_IFMT) == S_IFDIR;
     }
 
-static __always_inline__ bool __stat_is_fifo (uint32_t st_mode)
+static __always_inline bool __stat_is_fifo (uint32_t st_mode)
     {
     return (st_mode & S_IFMT) == S_IFIFO;
     }
 
-static __always_inline__ bool __stat_is_reg (uint32_t st_mode)
+static __always_inline bool __stat_is_reg (uint32_t st_mode)
     {
     return (st_mode & S_IFMT) == S_IFREG;
     }
 
-static __always_inline__ bool __stat_is_lnk (uint32_t st_mode)
+static __always_inline bool __stat_is_lnk (uint32_t st_mode)
     {
     return (st_mode & S_IFMT) == S_IFLNK;
     }
 
-static __always_inline__ bool __stat_is_sock (uint32_t st_mode)
+static __always_inline bool __stat_is_sock (uint32_t st_mode)
     {
     return (st_mode & S_IFMT) == S_IFSOCK;
     }

@@ -23,7 +23,7 @@
 
 task_id t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, ta, tb, tc;
 
-static __noreturn__ void tick_q_test_task (uintptr_t n)
+static __noreturn void tick_q_test_task (uintptr_t n)
     {
     static unsigned int adjs [3] = {1, (unsigned int) -2, 1};
     int                 i = 0;

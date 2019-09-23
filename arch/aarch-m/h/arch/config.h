@@ -40,7 +40,7 @@ typedef char       * va_t;      /* TODO: */
 
 /* inlines */
 
-static __always_inline__ size_t stack_size_get (size_t size)
+static __always_inline size_t stack_size_get (size_t size)
     {
     size  = size < MIN_STACK_SIZE ? MIN_STACK_SIZE : size;
     size += sizeof (struct esp);

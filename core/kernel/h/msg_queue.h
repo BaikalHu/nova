@@ -36,6 +36,8 @@ extern "C" {
 #define ERRNO_MQ_ILLEGAL_MSGS       ERRNO_JOIN (MID_MQ, 3)
 #define ERRNO_MQ_ILLEGAL_BUFF       ERRNO_JOIN (MID_MQ, 4)
 #define ERRNO_MQ_ILLEGAL_OPERATION  ERRNO_JOIN (MID_MQ, 5)
+#define ERRNO_MQ_UNAVAILABLE        ERRNO_JOIN (MID_MQ, 6)
+#define ERRNO_MQ_TIMEOUT            ERRNO_JOIN (MID_MQ, 7)
 
 typedef struct mq
     {

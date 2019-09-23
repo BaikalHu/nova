@@ -68,7 +68,7 @@ MODULE_INIT (cpu, cpu_init);
  * return: 0 on success, negtive value on error
  */
 
-__naked__ int mem_try_arch (void * dst, void * src, int order)
+__naked int mem_try_arch (void * dst, void * src, int order)
     {
     __asm__ __volatile__
         (
@@ -128,7 +128,7 @@ __naked__ int mem_try_arch (void * dst, void * src, int order)
  * return: NA
  */
 
-__naked__ void cpu_idle_enter (void)
+__naked void cpu_idle_enter (void)
     {
     __asm__ __volatile__
         (
@@ -156,15 +156,15 @@ __naked__ void cpu_idle_enter (void)
  * see also critical_exec the portable version in critical.c
  */
 
-__naked__ int critical_exec (int (* job) (uintptr_t, uintptr_t),
-                             uintptr_t arg1, uintptr_t arg2)
+__naked int critical_exec (int (* job) (uintptr_t, uintptr_t),
+                           uintptr_t arg1, uintptr_t arg2)
     {
     __asm__ __volatile__
         (
 "       .syntax unified                                                      \n"
 "                                                                            \n"
 "       .extern critical_q                                                   \n"
-"       .extern errno_set                                                    \n"
+"       .extern errno_get                                                    \n"
 #ifdef CONFIG_PROFILE
 "       .extern profile_sys_enter                                            \n"
 "       .extern profile_sys_exit                                             \n"
@@ -337,9 +337,10 @@ __naked__ int critical_exec (int (* job) (uintptr_t, uintptr_t),
 "                                                                            \n"
 "       @ critical_q is full, set errno and return -1                        \n"
 "0:     msr     primask, r6                                                  \n"
-"       ldr     r0, =%c2                                                     \n"
-"       ldr     r1, =errno_set                                               \n"
+"       ldr     r1, =errno_get                                               \n"
 "       blx     r1                                                           \n"
+"       ldr     r1, =%c2                                                     \n"
+"       str     r1, [r0]                                                     \n"
 "       movs    r0, #0                                                       \n"
 "       mvns    r0, r0                                                       \n"
 "       pop     {r4-r7, pc}                 @ return -1                      \n"
@@ -365,8 +366,8 @@ __naked__ int critical_exec (int (* job) (uintptr_t, uintptr_t),
  * return: the job executive result
  */
 
-__naked__ int critical_exec_on_csp (int (* job) (uintptr_t, uintptr_t),
-                                    uintptr_t arg1, uintptr_t arg2)
+__naked int critical_exec_on_csp (int (* job) (uintptr_t, uintptr_t),
+                                  uintptr_t arg1, uintptr_t arg2)
     {
     __asm__ __volatile__
         (
@@ -404,7 +405,7 @@ __naked__ int critical_exec_on_csp (int (* job) (uintptr_t, uintptr_t),
  * return: the index or -1 on error
  */
 
-__naked__ unsigned int deferred_isr_q_idx (void)
+__naked unsigned int deferred_isr_q_idx (void)
     {
     __asm__ __volatile__
         (

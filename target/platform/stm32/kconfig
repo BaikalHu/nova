@@ -285,6 +285,27 @@ config STM32_I2C3_AF
 
 endif
 
+#
+# STM32 ETH
+#
+
+config STM32_ETH
+    def_bool n
+
+config STM32_ETH1
+    bool "STM32 ETH#1"
+    select STM32_ETH
+    select LWIP
+    select HARDWARE_CHECKSUM
+    default n
+
+config STM32_ETH1_MAC
+    string "STM32 ETH#1 mac address."
+    depends on STM32_ETH1
+    default "00:80:e1:01:02:03"
+
+# STM32_ETH1
+
 endif
 
 orsource "*/kconfig"

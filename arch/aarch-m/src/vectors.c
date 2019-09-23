@@ -25,7 +25,7 @@ extern void pendsv_handler  (void);
 extern void systick_handler (void);
 extern void irq_handler     (void);
 
-__section__ (vectors) __unused__ void (* const _vectors []) (void) =
+__section__ (vectors) __unused void (* const _vectors []) (void) =
     {
     NULL,
     reset_handler,          /* reset        */

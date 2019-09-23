@@ -58,7 +58,7 @@ typedef struct bi_tree
  * return: the parent of the node <n>
  */
 
-static __always_inline__ bi_node_t * __bit_parent (bi_node_t * n)
+static __always_inline bi_node_t * __bit_parent (bi_node_t * n)
     {
     return n->p;
     }
@@ -70,7 +70,7 @@ static __always_inline__ bi_node_t * __bit_parent (bi_node_t * n)
  * return: NA
  */
 
-static __always_inline__ void __bit_set_parent (bi_node_t * n, bi_node_t * p)
+static __always_inline void __bit_set_parent (bi_node_t * n, bi_node_t * p)
     {
     n->p = p;
     }
@@ -82,7 +82,7 @@ static __always_inline__ void __bit_set_parent (bi_node_t * n, bi_node_t * p)
  * return: the grand parent of the node <n>
  */
 
-static __always_inline__ bi_node_t * __bit_raw_grand (bi_node_t * n)
+static __always_inline bi_node_t * __bit_raw_grand (bi_node_t * n)
     {
     return __bit_parent (__bit_parent (n));
     }
@@ -94,7 +94,7 @@ static __always_inline__ bi_node_t * __bit_raw_grand (bi_node_t * n)
  * return: the grand parent of the node <n>, NULL if n or p(n) is NULL
  */
 
-static __always_inline__ bi_node_t * __bit_grand (bi_node_t * n)
+static __always_inline bi_node_t * __bit_grand (bi_node_t * n)
     {
     bi_node_t * p;
 
@@ -113,7 +113,7 @@ static __always_inline__ bi_node_t * __bit_grand (bi_node_t * n)
  * return: the uncle of the node <n>
  */
 
-static __always_inline__ bi_node_t * __bit_raw_uncle (bi_node_t * n)
+static __always_inline bi_node_t * __bit_raw_uncle (bi_node_t * n)
     {
     bi_node_t * p = __bit_parent (n);
     bi_node_t * g = __bit_raw_grand (n);
@@ -128,7 +128,7 @@ static __always_inline__ bi_node_t * __bit_raw_uncle (bi_node_t * n)
  * return: the uncle of the node <n>, NULL if n, p(n) or g(n) is NULL
  */
 
-static __always_inline__ bi_node_t * __bit_uncle (bi_node_t * n)
+static __always_inline bi_node_t * __bit_uncle (bi_node_t * n)
     {
     bi_node_t * p;
     bi_node_t * g;
@@ -158,7 +158,7 @@ static __always_inline__ bi_node_t * __bit_uncle (bi_node_t * n)
  * return: the successor of <n>
  */
 
-static __always_inline__ bi_node_t * __bit_successor (bi_node_t * n)
+static __always_inline bi_node_t * __bit_successor (bi_node_t * n)
     {
     bi_node_t * s = n->r;
 
@@ -187,7 +187,7 @@ static __always_inline__ bi_node_t * __bit_successor (bi_node_t * n)
  * return: the predecessor of <n>
  */
 
-static __always_inline__ bi_node_t * __bit_predecessor (bi_node_t * n)
+static __always_inline bi_node_t * __bit_predecessor (bi_node_t * n)
     {
     bi_node_t * p = n->l;
 
@@ -217,7 +217,7 @@ static __always_inline__ bi_node_t * __bit_predecessor (bi_node_t * n)
  * return: the node with key = <k>, or NULL if key not found.
  */
 
-static __always_inline__ bi_node_t * __bit_find_eq (bi_tree_t * t, uintptr_t k)
+static __always_inline bi_node_t * __bit_find_eq (bi_tree_t * t, uintptr_t k)
     {
     bi_node_t * w = t->r;
 
@@ -244,7 +244,7 @@ static __always_inline__ bi_node_t * __bit_find_eq (bi_tree_t * t, uintptr_t k)
  * return: the nearest node with key > <k>, NULL or if key not found.
  */
 
-static __always_inline__ bi_node_t * __bit_find_gt (bi_tree_t * t, uintptr_t k)
+static __always_inline bi_node_t * __bit_find_gt (bi_tree_t * t, uintptr_t k)
     {
     bi_node_t * l = NULL;   /* last */
     bi_node_t * w = t->r;
@@ -275,7 +275,7 @@ static __always_inline__ bi_node_t * __bit_find_gt (bi_tree_t * t, uintptr_t k)
  * return: the nearest node with key < <k>, NULL or if key not found.
  */
 
-static __always_inline__ bi_node_t * __bit_find_lt (bi_tree_t * t, uintptr_t k)
+static __always_inline bi_node_t * __bit_find_lt (bi_tree_t * t, uintptr_t k)
     {
     bi_node_t * l = NULL;   /* last */
     bi_node_t * w = t->r;
@@ -305,7 +305,7 @@ static __always_inline__ bi_node_t * __bit_find_lt (bi_tree_t * t, uintptr_t k)
  * return: the first node, or NULL if the tree is empty
  */
 
-static __always_inline__ bi_node_t * __bit_first (bi_tree_t * t)
+static __always_inline bi_node_t * __bit_first (bi_tree_t * t)
     {
     bi_node_t * n = t->r;
 
@@ -327,7 +327,7 @@ static __always_inline__ bi_node_t * __bit_first (bi_tree_t * t)
  * return: the last node, or NULL if the tree is empty
  */
 
-static __always_inline__ bi_node_t * __bit_last (bi_tree_t * t)
+static __always_inline bi_node_t * __bit_last (bi_tree_t * t)
     {
     bi_node_t * n = t->r;
 
@@ -350,7 +350,7 @@ static __always_inline__ bi_node_t * __bit_last (bi_tree_t * t)
  * return: the nearest node with key >= <k>, or NULL if key not found.
  */
 
-static __always_inline__ bi_node_t * __bit_find_ge (bi_tree_t * t, uintptr_t k)
+static __always_inline bi_node_t * __bit_find_ge (bi_tree_t * t, uintptr_t k)
     {
     bi_node_t * l = NULL;   /* last */
     bi_node_t * w = t->r;
@@ -386,7 +386,7 @@ static __always_inline__ bi_node_t * __bit_find_ge (bi_tree_t * t, uintptr_t k)
  * return: the nearest node with key <= <k>, of NULL if key not found.
  */
 
-static __always_inline__ bi_node_t * __bit_find_le (bi_tree_t * t, uintptr_t k)
+static __always_inline bi_node_t * __bit_find_le (bi_tree_t * t, uintptr_t k)
     {
     bi_node_t * l = NULL;   /* last */
     bi_node_t * w = t->r;
@@ -426,10 +426,10 @@ static __always_inline__ bi_node_t * __bit_find_le (bi_tree_t * t, uintptr_t k)
  * return: the node with key = <k>, or NULL if node not found and allocate fail.
  */
 
-static __always_inline__ bi_node_t * __bit_node_get (bi_tree_t * t, uintptr_t k,
-                                                     bool * created,
-                                                     bi_node_t * (* create) (uintptr_t, uintptr_t),
-                                                     uintptr_t arg)
+static __always_inline bi_node_t * __bit_node_get (bi_tree_t * t, uintptr_t k,
+                                                   bool * created,
+                                                   bi_node_t * (* create) (uintptr_t, uintptr_t),
+                                                   uintptr_t arg)
     {
     bi_node_t *  w = t->r;      /* walker, iterator */
     bi_node_t *  l;             /* last one */
@@ -497,7 +497,7 @@ static __always_inline__ bi_node_t * __bit_node_get (bi_tree_t * t, uintptr_t k,
  * return: NA
  */
 
-static __always_inline__ void __bit_rotate_right (bi_tree_t * t, bi_node_t * n)
+static __always_inline void __bit_rotate_right (bi_tree_t * t, bi_node_t * n)
     {
     bi_node_t * a = n->l;
     bi_node_t * p = __bit_parent (n);
@@ -539,7 +539,7 @@ static __always_inline__ void __bit_rotate_right (bi_tree_t * t, bi_node_t * n)
  *    z   y          x   z
  */
 
-static __always_inline__ void __bit_rotate_left (bi_tree_t * t, bi_node_t * n)
+static __always_inline void __bit_rotate_left (bi_tree_t * t, bi_node_t * n)
     {
     bi_node_t * a = n->r;
     bi_node_t * p = __bit_parent (n);
@@ -577,7 +577,7 @@ static __always_inline__ void __bit_rotate_left (bi_tree_t * t, bi_node_t * n)
  * return: 0 insert done, -1 insert fail
  */
 
-static __always_inline__ int __bit_insert (bi_tree_t * t, bi_node_t * n)
+static __always_inline int __bit_insert (bi_tree_t * t, bi_node_t * n)
     {
     bi_node_t * p = t->r;
 
@@ -636,7 +636,7 @@ static __always_inline__ int __bit_insert (bi_tree_t * t, bi_node_t * n)
  * return: NA
  */
 
-static __always_inline__ void __bit_for_each (bi_tree_t * t, int (* pfn) (bi_node_t *))
+static __always_inline void __bit_for_each (bi_tree_t * t, int (* pfn) (bi_node_t *))
     {
     bi_node_t * n = t->r;
 
@@ -693,9 +693,9 @@ static __always_inline__ void __bit_for_each (bi_tree_t * t, int (* pfn) (bi_nod
  * return: 0 on success, -1 on error
  */
 
-static __always_inline__ int __bit_init (bi_tree_t * t,
-                                         int (* compare_nn) (bi_node_t *, bi_node_t *),
-                                         int (* compare_nk) (bi_node_t *, uintptr_t))
+static __always_inline int __bit_init (bi_tree_t * t,
+                                       int (* compare_nn) (bi_node_t *, bi_node_t *),
+                                       int (* compare_nk) (bi_node_t *, uintptr_t))
     {
     t->r = NULL;
 

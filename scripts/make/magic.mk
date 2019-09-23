@@ -24,8 +24,8 @@ usr-$(curdir)    := $(sort $(abspath $(wildcard $(addprefix $(curdir)/$(src-pref
 cflags-$(curdir) := $(cflags-$(par-$(curdir))) $(cflags-l-y)
 cflags-global    += $(cflags-g-y)
 
-inc-$(curdir)    := $(inc-$(par-$(curdir))) $(addprefix -I, $(abspath $(addprefix $(curdir)/, $(sort $(inc-l)))))
-inc-global       += $(addprefix -I, $(abspath $(sort $(dir $(wildcard $(addsuffix /./,$(addprefix $(curdir)/,$(inc-g))))))))
+inc-$(curdir)    := $(inc-$(par-$(curdir))) $(addprefix -I, $(abspath $(addprefix $(curdir)/, $(sort $(inc-l-y)))))
+inc-global       += $(addprefix -I, $(abspath $(sort $(dir $(wildcard $(addsuffix /./,$(addprefix $(curdir)/,$(inc-g-y))))))))
 
 # expand $(dir-y) and append to $(subs)
 ifneq ($(words $(dir-y)),0)
@@ -117,8 +117,8 @@ ifneq ($(words $(subs)),0)
     usr-y        :=
     cflags-l-y   :=
     cflags-g-y   :=
-    inc-g        :=
-    inc-l        :=
+    inc-g-y      :=
+    inc-l-y      :=
     src-prefix   :=
     ifeq ($(V),1)
         $(info ================================================================================)

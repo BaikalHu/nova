@@ -38,7 +38,7 @@
 #include <mutex.h>
 
 #include <bug.h>
-#include <mem.h>
+#include <phys_mem.h>
 #include <chunk.h>
 #include <heap.h>
 #include <cmder.h>
@@ -89,11 +89,6 @@ static inline int cmder_printf (cmder_t * cmder, const char * format, ...)
     va_end (valist);
 
     return ret;
-    }
-
-void errno_set (uint32_t e)
-    {
-    (void) e;
     }
 #endif
 

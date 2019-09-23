@@ -135,7 +135,7 @@ struct trace_ctx
  * of x [h] or x [l]
  */
 
-static __noinline__ uint32_t __bits (uint32_t x, uint32_t h, uint32_t l)
+static __noinline uint32_t __bits (uint32_t x, uint32_t h, uint32_t l)
     {
     return (x >> l) & ((1u << (h - l + 1)) - 1);
     }
@@ -144,7 +144,7 @@ static __noinline__ uint32_t __bits (uint32_t x, uint32_t h, uint32_t l)
  * __is_t1, check if an instruction is 16-bit instruction
  */
 
-static __always_inline__ bool __is_t1 (uint16_t instr)
+static __always_inline bool __is_t1 (uint16_t instr)
     {
     return (instr >> 11) < 0x1d;
     }
@@ -1010,7 +1010,7 @@ void back_trace (uint32_t sp, uint32_t lr, uint32_t pc)
  * return: NA
  */
 
-__naked__ void call_trace (void)
+__naked void call_trace (void)
     {
     __asm__ __volatile__
         (
@@ -1019,7 +1019,7 @@ __naked__ void call_trace (void)
 "       .extern back_trace                                                   \n"
 "                                                                            \n"
 "       mov     r0, sp                                                       \n"
-"       mov     r1, #0      @ set lr = 0 and pc = lr to skip ourself         \n"
+"       movs    r1, #0      @ set lr = 0 and pc = lr to skip ourself         \n"
 "       mov     r2, lr                                                       \n"
 "       ldr     r3, =back_trace                                              \n"
 "       bx      r3                                                           \n"

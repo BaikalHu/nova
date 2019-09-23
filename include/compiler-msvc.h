@@ -17,22 +17,22 @@
 #define __COMPILER_MSVC_H__
 
 /*
- * __unused__ - create a "unused" symbol
+ * __unused - create a "unused" symbol
  */
 
-#define __unused__
+#define __unused
 
 /*
- * __noreturn__ - create a non-return routine
+ * __noreturn - create a non-return routine
  */
 
-#define __noreturn__
+#define __noreturn
 
 /*
- * __weak__ - create a weak symbol
+ * __weak - create a weak symbol
  */
 
-#define __weak__
+#define __weak
 
 /*
  * dummy - create a non-used variable

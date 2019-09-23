@@ -54,7 +54,7 @@ typedef struct dlist
  * return: NA
  */
 
-static __always_inline__ void dlist_init (dlist_t * head)
+static __always_inline void dlist_init (dlist_t * head)
     {
     head->prev = head->next = head;
     }
@@ -66,7 +66,7 @@ static __always_inline__ void dlist_init (dlist_t * head)
  * the prev/next entries already!
  */
 
-static __always_inline__ void __dlist_add_at (dlist_t * prev, dlist_t * next, dlist_t * node)
+static __always_inline void __dlist_add_at (dlist_t * prev, dlist_t * next, dlist_t * node)
     {
     node->prev = prev;
     node->next = next;
@@ -83,7 +83,7 @@ static __always_inline__ void __dlist_add_at (dlist_t * prev, dlist_t * next, dl
  * This is good for implementing stacks
  */
 
-static __always_inline__ void dlist_add (dlist_t * head, dlist_t * node)
+static __always_inline void dlist_add (dlist_t * head, dlist_t * node)
     {
     __dlist_add_at (head, head->next, node);
     }
@@ -97,7 +97,7 @@ static __always_inline__ void dlist_add (dlist_t * head, dlist_t * node)
  * This is useful for implementing queues
  */
 
-static __always_inline__ void dlist_add_tail (dlist_t * head, dlist_t * node)
+static __always_inline void dlist_add_tail (dlist_t * head, dlist_t * node)
     {
     __dlist_add_at (head->prev, head, node);
     }
@@ -110,7 +110,7 @@ static __always_inline__ void dlist_add_tail (dlist_t * head, dlist_t * node)
  * in an undefined state
  */
 
-static __always_inline__ void dlist_del (dlist_t * node)
+static __always_inline void dlist_del (dlist_t * node)
     {
     node->prev->next = node->next;
     node->next->prev = node->prev;
@@ -123,7 +123,7 @@ static __always_inline__ void dlist_del (dlist_t * node)
  * Note: dlist_empty () on the node return true after this
  */
 
-static __always_inline__ void dlist_del_init (dlist_t * node)
+static __always_inline void dlist_del_init (dlist_t * node)
     {
     dlist_del  (node);
     dlist_init (node);
@@ -134,7 +134,7 @@ static __always_inline__ void dlist_del_init (dlist_t * node)
  * @head: the list head to check
  */
 
-static __always_inline__ int dlist_empty (dlist_t * head)
+static __always_inline int dlist_empty (dlist_t * head)
     {
     return head->prev == head;
     }

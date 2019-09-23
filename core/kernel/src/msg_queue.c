@@ -109,7 +109,7 @@ int mq_delete (mq_id mq)
     {
     if (unlikely (mq == NULL))
         {
-        errno_set (ERRNO_MQ_ILLEGAL_ID);
+        errno = ERRNO_MQ_ILLEGAL_ID;
         return -1;
         }
 
@@ -124,19 +124,19 @@ static inline int __mq_transfer (mq_id mq, void * buff, size_t size,
 
     if (unlikely (mq == NULL))
         {
-        errno_set (ERRNO_MQ_ILLEGAL_ID);
+        errno = ERRNO_MQ_ILLEGAL_ID;
         return -1;
         }
 
     if (unlikely (buff == NULL))
         {
-        errno_set (ERRNO_MQ_ILLEGAL_BUFF);
+        errno = ERRNO_MQ_ILLEGAL_BUFF;
         return -1;
         }
 
     if (unlikely (size == 0))
         {
-        errno_set (ERRNO_MQ_ILLEGAL_SIZE);
+        errno = ERRNO_MQ_ILLEGAL_SIZE;
         return -1;
         }
 
@@ -147,7 +147,7 @@ static inline int __mq_transfer (mq_id mq, void * buff, size_t size,
 
     if (op == MQ_OP_RD && int_context ())
         {
-        errno_set (ERRNO_MQ_ILLEGAL_OPERATION);
+        errno = ERRNO_MQ_ILLEGAL_OPERATION;
         return -1;
         }
 
@@ -160,6 +160,18 @@ static inline int __mq_transfer (mq_id mq, void * buff, size_t size,
 
     if (unlikely (sem_timedwait (&mq->sem [op], timeout) != 0))
         {
+        switch (errno)
+            {
+            case ERRNO_SEM_TIMEOUT:
+                errno = ERRNO_MQ_TIMEOUT;
+                break;
+            case ERRNO_SEM_UNAVAILABLE:
+                errno = ERRNO_MQ_UNAVAILABLE;
+                break;
+            default:
+                break;
+            }
+
         obj_unprotect (&mq->obj);
         return -1;
         }
@@ -284,13 +296,13 @@ static int __mq_init (obj_id obj, va_list valist)
 
     if (unlikely (msg_size == 0))
         {
-        errno_set (ERRNO_MQ_ILLEGAL_SIZE);
+        errno = ERRNO_MQ_ILLEGAL_SIZE;
         return -1;
         }
 
     if (unlikely (max_msgs == 0 || max_msgs > (size_t) INT_MAX))
         {
-        errno_set (ERRNO_MQ_ILLEGAL_MSGS);
+        errno = ERRNO_MQ_ILLEGAL_MSGS;
         return -1;
         }
 

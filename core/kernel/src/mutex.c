@@ -51,7 +51,7 @@ int mutex_init (mutex_id mutex)
     {
     if (unlikely (mutex == NULL))
         {
-        errno_set (ERRNO_MUTEX_ILLEGAL_ID);
+        errno = ERRNO_MUTEX_ILLEGAL_ID;
         return -1;
         }
 
@@ -316,7 +316,7 @@ static int __mutex_lock (uintptr_t arg1, uintptr_t arg2)
 
     if (timeout == 0)
         {
-        errno_set (ERRNO_MUTEX_UNAVAILABLE);
+        errno = ERRNO_MUTEX_UNAVAILABLE;
         return -1;
         }
 
@@ -341,7 +341,7 @@ int mutex_timedlock (mutex_id mutex, unsigned int timeout)
     {
     if (unlikely (mutex == NULL))
         {
-        errno_set (ERRNO_MUTEX_ILLEGAL_ID);
+        errno = ERRNO_MUTEX_ILLEGAL_ID;
         return -1;
         }
 
@@ -392,7 +392,7 @@ int __mutex_unlock (uintptr_t arg1, uintptr_t arg2)
 
     if (unlikely (mutex->owner != current))
         {
-        errno_set (ERRNO_MUTEX_ILLEGAL_OPERATION);
+        errno = ERRNO_MUTEX_ILLEGAL_OPERATION;
         return -1;
         }
 
@@ -437,7 +437,7 @@ int mutex_unlock (mutex_id mutex)
     {
     if (unlikely (mutex == NULL))
         {
-        errno_set (ERRNO_MUTEX_ILLEGAL_ID);
+        errno = ERRNO_MUTEX_ILLEGAL_ID;
         return -1;
         }
 

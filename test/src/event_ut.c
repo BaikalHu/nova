@@ -122,13 +122,13 @@ void e6 (void)
     kprintf ("task e6 recv 0x8f, ALL, 5 second (will timeout)\n");
 
     ret = event_timedrecv (&event, 0x8f, EVENT_WAIT_ALL | EVENT_WAIT_CLR, 5 * CONFIG_SYS_TICK_HZ, &r);
-        
+
     if (ret != -1)
         {
         __bug ("timeout test fail!");
         }
 
-    if (errno_get () != ERRNO_EVENT_TIMEOUT)
+    if (errno != ERRNO_EVENT_TIMEOUT)
         {
         __bug ("timeout test fail!");
         }

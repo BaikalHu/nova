@@ -84,7 +84,7 @@ typedef struct ach
  * return: true if the chunk is free, false if not
  */
 
-static __always_inline__ int __is_free (chunk_t * chunk)
+static __always_inline int __is_free (chunk_t * chunk)
     {
     return (chunk->size & 1) == 0;
     }
@@ -94,7 +94,7 @@ static __always_inline__ int __is_free (chunk_t * chunk)
  * @chunk: the given chunk
  */
 
-static __always_inline__ void __set_chunk_allocated (chunk_t * chunk)
+static __always_inline void __set_chunk_allocated (chunk_t * chunk)
     {
     chunk->size |= 1;
     }
@@ -104,7 +104,7 @@ static __always_inline__ void __set_chunk_allocated (chunk_t * chunk)
  * @chunk: the given chunk
  */
 
-static __always_inline__ void __set_chunk_free (chunk_t * chunk)
+static __always_inline void __set_chunk_free (chunk_t * chunk)
     {
     chunk->size &= ~1u;
     }
@@ -116,7 +116,7 @@ static __always_inline__ void __set_chunk_free (chunk_t * chunk)
  * return: next chunk
  */
 
-static __always_inline__ chunk_t * __get_next_chunk (chunk_t * chunk)
+static __always_inline chunk_t * __get_next_chunk (chunk_t * chunk)
     {
     return (chunk_t *) (((char *) chunk) + (chunk->size & ~1u));
     }
@@ -128,7 +128,7 @@ static __always_inline__ chunk_t * __get_next_chunk (chunk_t * chunk)
  * return: previous chunk
  */
 
-static __always_inline__ chunk_t * __get_prev_chunk (chunk_t * chunk)
+static __always_inline chunk_t * __get_prev_chunk (chunk_t * chunk)
     {
     return chunk->prev;
     }
@@ -140,7 +140,7 @@ static __always_inline__ chunk_t * __get_prev_chunk (chunk_t * chunk)
  * return: the memory block in the chunk
  */
 
-static __always_inline__ char * __get_mem_block (chunk_t * chunk)
+static __always_inline char * __get_mem_block (chunk_t * chunk)
     {
     return (char *) chunk + sizeof (ach_t);
     }
@@ -152,7 +152,7 @@ static __always_inline__ char * __get_mem_block (chunk_t * chunk)
  * return: the new chunk containing the memory block
  */
 
-static __always_inline__ chunk_t * __get_fch_from_mem (char * mem)
+static __always_inline chunk_t * __get_fch_from_mem (char * mem)
     {
     return &((chunk_t *) mem) [-1];
     }
@@ -164,7 +164,7 @@ static __always_inline__ chunk_t * __get_fch_from_mem (char * mem)
  * return: the chunk containing the memory block
  */
 
-static __always_inline__ ach_t * __get_ach_from_mem (char * mem)
+static __always_inline ach_t * __get_ach_from_mem (char * mem)
     {
     uintptr_t szorptr;
 
@@ -212,7 +212,7 @@ static __always_inline__ ach_t * __get_ach_from_mem (char * mem)
  * return: NA
  */
 
-static __always_inline__ void __set_ach_to_mem (char * mem, chunk_t * chunk)
+static __always_inline void __set_ach_to_mem (char * mem, chunk_t * chunk)
     {
     ((chunk_t **) mem) [-1] = chunk;
     }

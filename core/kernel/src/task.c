@@ -23,7 +23,7 @@
 #include <common.h>
 #include <class.h>
 #include <list.h>
-#include <mem.h>
+#include <heap.h>
 #include <defer.h>
 #include <task.h>
 #include <irq.h>
@@ -109,13 +109,13 @@ extern task_t           defer [1];
 
 /* inlines */
 
-static __always_inline__ bool __task_lib_inited (void)
+static __always_inline bool __task_lib_inited (void)
     {
     return ready_q.highest != NULL;
     }
 
 #ifdef CONFIG_TASK_CREATE_HOOK
-static __always_inline__ int __walk_create_hook (task_id task)
+static __always_inline int __walk_create_hook (task_id task)
     {
     int idx;
 
@@ -173,7 +173,7 @@ int task_create_hook_del (task_create_pfn pfn)
 #endif
 
 #ifdef CONFIG_TASK_DELETE_HOOK
-static __always_inline__ void __walk_delete_hook (task_id task)
+static __always_inline void __walk_delete_hook (task_id task)
     {
     int idx;
 
@@ -209,7 +209,7 @@ int task_delete_hook_del (task_delete_pfn pfn)
 #endif
 
 #ifdef CONFIG_TASK_SWITCH_HOOK
-static __always_inline__ void __walk_switch_hook (task_id old, task_id new)
+static __always_inline void __walk_switch_hook (task_id old, task_id new)
     {
     int idx;
 
@@ -233,7 +233,8 @@ void task_switch_hook (task_id old, task_id new)
 
     if (task_stack_overflow (old))
         {
-        __bug ("task stack overflow!");
+        kprintf ("last task is: %p, name: %s\n", old, old->name);
+        BUG ("task stack overflow!");
         }
 
     do
@@ -278,7 +279,7 @@ int task_switch_hook_del (task_switch_pfn pfn)
  * return: NA, never return
  */
 
-static __noreturn__ int idle_entry (uintptr_t dummy)
+static __noreturn int idle_entry (uintptr_t dummy)
     {
     (void) dummy;
 
@@ -352,19 +353,19 @@ int task_init (task_id task, char * stack, const char * name, uint8_t prio,
     {
     if (unlikely (task == NULL))
         {
-        errno_set (ERRNO_TASK_ILLEGAL_TCB);
+        errno = ERRNO_TASK_ILLEGAL_TCB;
         return -1;
         }
 
     if (unlikely (stack == NULL))
         {
-        errno_set (ERRNO_TASK_ILLEGAL_STACK);
+        errno = ERRNO_TASK_ILLEGAL_STACK;
         return -1;
         }
 
     if (!aligned_at (stack, STACK_ALIGN) || !aligned_at (stack_size, STACK_ALIGN))
         {
-        errno_set (ERRNO_TASK_ILLEGAL_STACK);
+        errno = ERRNO_TASK_ILLEGAL_STACK;
         return -1;
         }
 
@@ -463,13 +464,13 @@ static inline int __verify_context (task_id task)
     {
     if (unlikely (!__task_lib_inited ()))
         {
-        errno_set (ERRNO_TASK_ILLEGAL_OPERATION);
+        errno = ERRNO_TASK_ILLEGAL_OPERATION;
         return -1;
         }
 
     if (unlikely (task == NULL))
         {
-        errno_set (ERRNO_TASK_ILLEGAL_TCB);
+        errno = ERRNO_TASK_ILLEGAL_TCB;
         return -1;
         }
 
@@ -492,7 +493,7 @@ int task_delete (task_id task)
 
     if (unlikely (task->option & TASK_OPTION_SYSTEM))
         {
-        errno_set (ERRNO_TASK_ILLEGAL_OPERATION);
+        errno = ERRNO_TASK_ILLEGAL_OPERATION;
         return -1;
         }
 
@@ -544,7 +545,7 @@ int task_delete (task_id task)
  * return: 0 for success, negtive value if fail
  */
 
-int __noreturn__ task_exit (void)
+int __noreturn task_exit (void)
     {
     task_delete (current);
 
@@ -663,7 +664,7 @@ int task_suspend (task_id task)
 
     if (unlikely (task->option & TASK_OPTION_NO_BLOCK))
         {
-        errno_set (ERRNO_TASK_ILLEGAL_OPERATION);
+        errno = ERRNO_TASK_ILLEGAL_OPERATION;
         return -1;
         }
 
@@ -816,13 +817,13 @@ int task_prio_set (task_id task, uint8_t prio)
     {
     if (unlikely (task == NULL))
         {
-        errno_set (ERRNO_TASK_ILLEGAL_TCB);
+        errno = ERRNO_TASK_ILLEGAL_TCB;
         return -1;
         }
 
     if (unlikely (prio > TASK_PRIO_MAX))
         {
-        errno_set (ERRNO_TASK_ILLEGAL_PRIO);
+        errno = ERRNO_TASK_ILLEGAL_PRIO;
         return -1;
         }
 
@@ -889,7 +890,7 @@ int task_delay (unsigned int ticks)
     {
     if (unlikely (current == NULL))
         {
-        errno_set (ERRNO_TASK_ILLEGAL_OPERATION);
+        errno = ERRNO_TASK_ILLEGAL_OPERATION;
         return -1;
         }
 
@@ -1206,7 +1207,7 @@ int task_tls_slot_alloc (void)
 
         if (idx >= CONFIG_NR_TLS_SLOTS)
             {
-            errno_set (ERRNO_TASK_NOT_ENOUGH_SLOTS);
+            errno = ERRNO_TASK_NOT_ENOUGH_SLOTS;
             return -1;
             }
         }
@@ -1229,13 +1230,13 @@ int task_tls_set (task_id task, int slot, uintptr_t value)
     {
     if (task == NULL)
         {
-        errno_set (ERRNO_TASK_ILLEGAL_TCB);
+        errno = ERRNO_TASK_ILLEGAL_TCB;
         return -1;
         }
 
     if (slot < 0 || slot >= CONFIG_NR_TLS_SLOTS)
         {
-        errno_set (ERRNO_TASK_ILLEGAL_TLS_INDEX);
+        errno = ERRNO_TASK_ILLEGAL_TLS_INDEX;
         return -1;
         }
 
@@ -1257,13 +1258,13 @@ int task_tls_get (task_id task, int slot, uintptr_t * value)
     {
     if (task == NULL)
         {
-        errno_set (ERRNO_TASK_ILLEGAL_TCB);
+        errno = ERRNO_TASK_ILLEGAL_TCB;
         return -1;
         }
 
     if (slot < 0 || slot >= CONFIG_NR_TLS_SLOTS)
         {
-        errno_set (ERRNO_TASK_ILLEGAL_TLS_INDEX);
+        errno = ERRNO_TASK_ILLEGAL_TLS_INDEX;
         return -1;
         }
 
@@ -1296,7 +1297,7 @@ static int __task_init (obj_id obj, va_list valist)
 
     if (unlikely (prio > TASK_PRIO_MAX))
         {
-        errno_set (ERRNO_TASK_ILLEGAL_PRIO);
+        errno = ERRNO_TASK_ILLEGAL_PRIO;
         return -1;
         }
 

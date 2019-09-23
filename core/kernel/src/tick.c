@@ -692,7 +692,7 @@ static int tick_lib_init (void)
 
     if (systim_jiff < 2)
         {
-        errno_set (ERRNO_TICK_HZ_TOO_HIGH);
+        errno = ERRNO_TICK_HZ_TOO_HIGH;
         BUG ("CONFIG_SYS_TICK_HZ too high!");
         }
 
@@ -700,7 +700,7 @@ static int tick_lib_init (void)
 
     if (systim_max_sleep_tick == 0)
         {
-        errno_set (ERRNO_TICK_HZ_TOO_LOW);
+        errno = ERRNO_TICK_HZ_TOO_LOW;
         BUG ("CONFIG_SYS_TICK_HZ too low!");
         }
 #endif

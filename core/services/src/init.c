@@ -37,7 +37,7 @@ extern char __section_end__         (init_user) [];
  * return : 0 on success, negtive value on error
  */
 
-__noreturn__ void kernel_init (void)
+__noreturn void kernel_init (void)
     {
     init_pfn * init;
 
@@ -48,7 +48,7 @@ __noreturn__ void kernel_init (void)
         if ((*init) () != 0)
             {
             kprintf ("kernel initialization fail, last routine is %p, errno = %p\n",
-                     *init, errno_get ());
+                     *init, errno);
             }
         }
 

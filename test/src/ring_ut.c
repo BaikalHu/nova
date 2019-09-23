@@ -29,7 +29,7 @@ static uint64_t multi_byte_get_size = 0;
 static uint64_t singl_byte_puts     = 0;
 static uint64_t singl_byte_gets     = 0;
 
-static __noreturn__ void __test_block (void)
+static __noreturn void __test_block (void)
     {
     ring_t        * ring = ring_create (63);
     unsigned char * pw   = malloc (64);
@@ -123,7 +123,7 @@ static __noreturn__ void __test_block (void)
         }
     }
 
-static __noreturn__ void __test_byte (void)
+static __noreturn void __test_byte (void)
     {
     ring_t * ring = ring_create (2);
     unsigned char r;

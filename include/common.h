@@ -126,7 +126,7 @@ extern "C" {
  * @x: the numeric value
  */
 
-static __always_inline__ int __fls_u32 (uint32_t x)
+static __always_inline int __fls_u32 (uint32_t x)
     {
     return 31 - __clz_u32 (x);
     }
@@ -136,7 +136,7 @@ static __always_inline__ int __fls_u32 (uint32_t x)
  * @x: the numeric value
  */
 
-static __always_inline__ int __fls_u64 (uint64_t x)
+static __always_inline int __fls_u64 (uint64_t x)
     {
     return 63 - __clz_u64 (x);
     }

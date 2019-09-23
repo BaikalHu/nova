@@ -206,7 +206,7 @@ int vfs_open (const char * o_path, int o_flags)
 
     if ((o_path == NULL) || (o_path [strlen (o_path) - 1] == '/'))
         {
-        errno_set (EINVAL);
+        errno = EINVAL;
         return -1;
         }
 
@@ -219,7 +219,7 @@ int vfs_open (const char * o_path, int o_flags)
 
     if (mutex_lock (&fs_lock) != 0)
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         goto out_free_path;
         }
 
@@ -227,25 +227,25 @@ int vfs_open (const char * o_path, int o_flags)
 
     if ((fd = __get_fildes (path)) == -1)
         {
-        errno_set (ENFILE);
+        errno = ENFILE;
         goto out_unlock_fs;
         }
 
     if ((o_flags & O_EXCL) && (__get_opened_file (path) != NULL))
         {
-        errno_set (EACCES);
+        errno = EACCES;
         goto out_release_fd;
         }
 
     if ((mp = __path_resolve ((const char *) path, &rela_path)) == NULL)
         {
-        errno_set (ENOENT);
+        errno = ENOENT;
         goto out_release_fd;
         }
 
     if (*rela_path == '\0')
         {
-        errno_set (EINVAL);
+        errno = EINVAL;
         goto out_release_fd;
         }
 
@@ -253,7 +253,7 @@ int vfs_open (const char * o_path, int o_flags)
 
     if (mutex_lock (&mp->mp_lock) != 0)
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         goto out_release_fd;
         }
 
@@ -261,7 +261,7 @@ int vfs_open (const char * o_path, int o_flags)
         {
         if ((o_flags & O_CREAT) == 0)
             {
-            errno_set (ENOENT);
+            errno = ENOENT;
             goto out_unlock_mp;
             }
 
@@ -273,19 +273,19 @@ int vfs_open (const char * o_path, int o_flags)
         {
         if (__stat_is_dir (stat.st_mode))
             {
-            errno_set (EINVAL);
+            errno = EINVAL;
             goto out_unlock_mp;
             }
 
         if (((stat.st_mode & S_IRUSR) == 0) && (o_flags & O_ACCMODE) != O_WRONLY)
             {
-            errno_set (EACCES);
+            errno = EACCES;
             goto out_unlock_mp;
             }
 
         if (((stat.st_mode & S_IWUSR) == 0) && (o_flags & O_ACCMODE) != O_RDONLY)
             {
-            errno_set (EACCES);
+            errno = EACCES;
             goto out_unlock_mp;
             }
 
@@ -395,13 +395,13 @@ int vfs_close (int fd)
 
     if (fd < 0 || fd >= CONFIG_MAX_NR_FILES)
         {
-        errno_set (EBADF);
+        errno = EBADF;
         return -1;
         }
 
     if (mutex_lock (&fs_lock) != 0)
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         return -1;
         }
 
@@ -409,7 +409,7 @@ int vfs_close (int fd)
 
     if (file == NULL)
         {
-        errno_set (EBADF);
+        errno = EBADF;
         mutex_unlock (&fs_lock);
         return -1;
         }
@@ -418,7 +418,7 @@ int vfs_close (int fd)
 
     if ((ret = mutex_lock (&mp->mp_lock)) != 0)
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         mutex_unlock (&fs_lock);
         return -1;
         }
@@ -468,26 +468,26 @@ int vfs_read (int fd, char * buff, size_t nbyte)
 
     if (fd < 0 || fd >= CONFIG_MAX_NR_FILES)
         {
-        errno_set (EBADF);
+        errno = EBADF;
         return -1;
         }
 
     if (mutex_lock (&fs_lock) != 0)
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         return -1;
         }
 
     if ((file = fd_table [fd].fd_file) == NULL)
         {
-        errno_set (EBADF);
+        errno = EBADF;
         (void) mutex_unlock (&fs_lock);
         return -1;
         }
 
     if ((fd_table [fd].fd_flags & O_ACCMODE) == O_WRONLY)
         {
-        errno_set (EACCES);
+        errno = EACCES;
         (void) mutex_unlock (&fs_lock);
         return -1;
         }
@@ -500,7 +500,7 @@ int vfs_read (int fd, char * buff, size_t nbyte)
 
     if (unlikely (ret != 0))
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         return -1;
         }
 
@@ -528,26 +528,26 @@ int vfs_write (int fd, const char * buff, size_t nbyte)
 
     if (fd < 0 || fd >= CONFIG_MAX_NR_FILES)
         {
-        errno_set (EBADF);
+        errno = EBADF;
         return -1;
         }
 
     if (mutex_lock (&fs_lock) != 0)
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         return -1;
         }
 
     if ((file = fd_table [fd].fd_file) == NULL)
         {
-        errno_set (EBADF);
+        errno = EBADF;
         (void) mutex_unlock (&fs_lock);
         return -1;
         }
 
     if ((fd_table [fd].fd_flags & O_ACCMODE) == O_RDONLY)
         {
-        errno_set (EACCES);
+        errno = EACCES;
         (void) mutex_unlock (&fs_lock);
         return -1;
         }
@@ -560,7 +560,7 @@ int vfs_write (int fd, const char * buff, size_t nbyte)
 
     if (unlikely (ret != 0))
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         return -1;
         }
 
@@ -588,26 +588,26 @@ int vfs_lseek (int fd, int offset, int whence)
 
     if (fd < 0 || fd >= CONFIG_MAX_NR_FILES)
         {
-        errno_set (EBADF);
+        errno = EBADF;
         return -1;
         }
 
     if (mutex_lock (&fs_lock) != 0)
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         return -1;
         }
 
     if ((file = fd_table [fd].fd_file) == NULL)
         {
-        errno_set (EBADF);
+        errno = EBADF;
         (void) mutex_unlock (&fs_lock);
         return -1;
         }
 
     if (file->fl_fops->lseek == NULL)
         {
-        errno_set (ENOTSUP);
+        errno = ENOTSUP;
         (void) mutex_unlock (&fs_lock);
         return -1;
         }
@@ -620,7 +620,7 @@ int vfs_lseek (int fd, int offset, int whence)
 
     if (unlikely (ret != 0))
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         return -1;
         }
 
@@ -648,26 +648,26 @@ int vfs_ioctl (int fd, int req, ...)
 
     if (fd < 0 || fd >= CONFIG_MAX_NR_FILES)
         {
-        errno_set (EBADF);
+        errno = EBADF;
         return -1;
         }
 
     if (mutex_lock (&fs_lock) != 0)
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         return -1;
         }
 
     if ((file = fd_table [fd].fd_file) == NULL)
         {
-        errno_set (EBADF);
+        errno = EBADF;
         (void) mutex_unlock (&fs_lock);
         return -1;
         }
 
     if (file->fl_fops->ioctl == NULL)
         {
-        errno_set (ENOTSUP);
+        errno = ENOTSUP;
         (void) mutex_unlock (&fs_lock);
         return -1;
         }
@@ -680,7 +680,7 @@ int vfs_ioctl (int fd, int req, ...)
 
     if (unlikely (ret != 0))
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         return -1;
         }
 
@@ -708,26 +708,26 @@ int vfs_sync (int fd)
 
     if (fd < 0 || fd >= CONFIG_MAX_NR_FILES)
         {
-        errno_set (EBADF);
+        errno = EBADF;
         return -1;
         }
 
     if (mutex_lock (&fs_lock) != 0)
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         return -1;
         }
 
     if ((file = fd_table [fd].fd_file) == NULL)
         {
-        errno_set (EBADF);
+        errno = EBADF;
         (void) mutex_unlock (&fs_lock);
         return -1;
         }
 
     if (file->fl_fops->sync == NULL)
         {
-        errno_set (ENOTSUP);
+        errno = ENOTSUP;
         (void) mutex_unlock (&fs_lock);
         return -1;
         }
@@ -736,7 +736,7 @@ int vfs_sync (int fd)
 
     if ((fd_table [fd].fd_flags & O_ACCMODE) == O_RDONLY)
         {
-        errno_set (EACCES);
+        errno = EACCES;
         (void) mutex_unlock (&fs_lock);
         return -1;
         }
@@ -749,7 +749,7 @@ int vfs_sync (int fd)
 
     if (unlikely (ret != 0))
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         return -1;
         }
 
@@ -777,19 +777,19 @@ int vfs_stat (const char * s_path, struct stat * stat)
 
     if (path == NULL)
         {
-        errno_set (EINVAL);
+        errno = EINVAL;
         return -1;
         }
 
     if (mutex_lock (&fs_lock) != 0)
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         goto out_free_path;
         }
 
     if ((mp = __path_resolve (path, &rela_path)) == NULL)
         {
-        errno_set (ENOENT);
+        errno = ENOENT;
         }
     else
         {
@@ -830,13 +830,13 @@ int vfs_unlink (const char * u_path)
 
     if (path == NULL)
         {
-        errno_set (EINVAL);
+        errno = EINVAL;
         return -1;
         }
 
     if (mutex_lock (&fs_lock) != 0)
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         goto out_free_path;
         }
 
@@ -844,7 +844,7 @@ int vfs_unlink (const char * u_path)
 
     if (__get_opened_file (path) != NULL)
         {
-        errno_set (ENFILE);
+        errno = ENFILE;
         goto out_unlock_fs;
         }
 
@@ -852,19 +852,19 @@ int vfs_unlink (const char * u_path)
 
     if (__has_opened_file (path))
         {
-        errno_set (EBUSY);
+        errno = EBUSY;
         goto out_unlock_fs;
         }
 
     if ((mp = __path_resolve (path, &rela_path)) == NULL)
         {
-        errno_set (ENOENT);
+        errno = ENOENT;
         goto out_unlock_fs;
         }
 
     if (mp->mp_fs->fs_mops->unlink == NULL)
         {
-        errno_set (ENOTSUP);
+        errno = ENOTSUP;
         goto out_unlock_fs;
         }
 
@@ -906,7 +906,7 @@ int vfs_rename (const char * old, const char * new)
 
     if (old == NULL || new == NULL)
         {
-        errno_set (EINVAL);
+        errno = EINVAL;
         return -1;
         }
 
@@ -922,7 +922,7 @@ int vfs_rename (const char * old, const char * new)
 
     if (mutex_lock (&fs_lock) != 0)
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         goto out_free_new;
         }
 
@@ -932,25 +932,25 @@ int vfs_rename (const char * old, const char * new)
         (__get_opened_file (new_path) != NULL) ||
         (__has_opened_file (old_path)))
         {
-        errno_set (EBUSY);
+        errno = EBUSY;
         goto out_unlock_fs;
         }
 
     if ((mp = __path_resolve ((const char *) old_path, &rela_path_old)) == NULL)
         {
-        errno_set (ENOENT);
+        errno = ENOENT;
         goto out_unlock_fs;
         }
 
     if (mp != __path_resolve ((const char *)new_path, &rela_path_new))
         {
-        errno_set (EXDEV);
+        errno = EXDEV;
         goto out_unlock_fs;
         }
 
     if (mp->mp_fs->fs_mops->rename == NULL)
         {
-        errno_set (ENOTSUP);
+        errno = ENOTSUP;
         goto out_unlock_fs;
         }
 
@@ -990,7 +990,7 @@ struct dir * vfs_opendir (const char * o_path)
 
     if (o_path == NULL)
         {
-        errno_set (EINVAL);
+        errno = EINVAL;
         return NULL;
         }
 
@@ -1006,13 +1006,13 @@ struct dir * vfs_opendir (const char * o_path)
 
     if (mutex_lock (&fs_lock) != 0)
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         goto out_free_dir;
         }
 
     if ((mp = __path_resolve (path, &rela_path)) == NULL)
         {
-        errno_set (ENOENT);
+        errno = ENOENT;
         goto out_unlock_fs;
         }
 
@@ -1026,7 +1026,7 @@ struct dir * vfs_opendir (const char * o_path)
             }
         else
             {
-            errno_set (ENOTSUP);
+            errno = ENOTSUP;
             }
 
         (void) mutex_unlock (&mp->mp_lock);
@@ -1045,7 +1045,7 @@ struct dir * vfs_opendir (const char * o_path)
         return dir;
         }
 
-    errno_set (EAGAIN);
+    errno = EAGAIN;
 
 out_unlock_fs:
     (void) mutex_unlock (&fs_lock);
@@ -1072,13 +1072,13 @@ struct dirent * vfs_readdir (struct dir * dir)
 
     if (dir == NULL)
         {
-        errno_set (EBADF);
+        errno = EBADF;
         return NULL;
         }
 
     if (mutex_lock (&fs_lock) != 0)
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         return NULL;
         }
 
@@ -1090,7 +1090,7 @@ struct dirent * vfs_readdir (struct dir * dir)
 
     if (ret != 0)
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         return NULL;
         }
 
@@ -1104,7 +1104,7 @@ struct dirent * vfs_readdir (struct dir * dir)
         }
     else
         {
-        errno_set (ENOTSUP);
+        errno = ENOTSUP;
         }
 
     (void) mutex_unlock (&mp->mp_lock);
@@ -1126,13 +1126,13 @@ int vfs_closedir (struct dir * dir)
 
     if (dir == NULL)
         {
-        errno_set (EBADF);
+        errno = EBADF;
         return -1;
         }
 
     if (mutex_lock (&fs_lock) != 0)
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         return -1;
         }
 
@@ -1144,7 +1144,7 @@ int vfs_closedir (struct dir * dir)
 
     if (unlikely (ret != 0))
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         return -1;
         }
 
@@ -1154,7 +1154,7 @@ int vfs_closedir (struct dir * dir)
         }
     else
         {
-        errno_set (ENOTSUP);
+        errno = ENOTSUP;
         }
 
     free (dir);
@@ -1182,7 +1182,7 @@ int vfs_mkdir (const char * c_path, int c_mode)
 
     if (c_path == NULL)
         {
-        errno_set (EINVAL);
+        errno = EINVAL;
         return -1;
         }
 
@@ -1193,25 +1193,25 @@ int vfs_mkdir (const char * c_path, int c_mode)
 
     if (mutex_lock (&fs_lock) != 0)
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         goto out_free_path;
         }
 
     if ((mp = __path_resolve ((const char *) path, &rela_path)) == NULL)
         {
-        errno_set (ENOENT);
+        errno = ENOENT;
         goto out_unlock_fs;
         }
 
     if (*rela_path == '\0')     /* file/dir existed */
         {
-        errno_set (EEXIST);
+        errno = EEXIST;
         goto out_unlock_fs;
         }
 
     if (unlikely (mutex_lock (&mp->mp_lock) != 0))
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         goto out_unlock_fs;
         }
 
@@ -1223,7 +1223,7 @@ int vfs_mkdir (const char * c_path, int c_mode)
         }
     else
         {
-        errno_set (ENOTSUP);
+        errno = ENOTSUP;
         }
 
     (void) mutex_unlock (&mp->mp_lock);
@@ -1284,7 +1284,7 @@ int vfs_mount (const char * fs_name, const char * mp_path, ...)
 
     if (fs_name == NULL || mp_path == NULL || mp_path [0] != '/')
         {
-        errno_set (EINVAL);
+        errno = EINVAL;
         return -1;
         }
 
@@ -1299,19 +1299,19 @@ int vfs_mount (const char * fs_name, const char * mp_path, ...)
 
     if ((ret = mutex_lock (&fs_lock)) != 0)
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         goto err_out_free_path;
         }
 
     if ((fs = __get_fs_by_name (fs_name)) == NULL)
         {
-        errno_set (ENOENT);
+        errno = ENOENT;
         goto err_out_unlock_fs;
         }
 
     if ((__path_resolve ((const char *) path, &temp) != NULL) && (*temp == '\0'))
         {
-        errno_set (EEXIST);
+        errno = EEXIST;
         goto err_out_unlock_fs;
         }
 
@@ -1369,7 +1369,7 @@ int vfs_unmount (const char * path)
 
     if (unlikely (mutex_lock (&fs_lock) != 0))
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         return -1;
         }
 
@@ -1377,21 +1377,21 @@ int vfs_unmount (const char * path)
 
     if (unlikely ((mp == NULL) || (*temp != '\0')))
         {
-        errno_set (ENOENT);
+        errno = ENOENT;
         mutex_unlock (&fs_lock);
         return -1;
         }
 
     if (unlikely (mp->mp_refs != 0))
         {
-        errno_set (EBUSY);
+        errno = EBUSY;
         mutex_unlock (&fs_lock);
         return -1;
         }
 
     if (unlikely (mp->mp_fs->fs_mops->unmount == NULL))
         {
-        errno_set (ENOTSUP);
+        errno = ENOTSUP;
         mutex_unlock (&fs_lock);
         return -1;
         }
@@ -1497,13 +1497,13 @@ int vfs_fs_unregister (struct file_system * fs)
 
     if (unlikely (mutex_lock (&fs_lock) != 0))
         {
-        errno_set (EAGAIN);
+        errno = EAGAIN;
         return -1;
         }
 
     if (fs->fs_refs != 0)
         {
-        errno_set (EBUSY);
+        errno = EBUSY;
         ret = -1;
         }
     else

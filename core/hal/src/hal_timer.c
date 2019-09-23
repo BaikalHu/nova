@@ -36,13 +36,13 @@ int hal_timer_enable (hal_timer_t * timer, uint8_t mode, unsigned long count)
     {
     if (unlikely (timer == NULL))
         {
-        errno_set (ERRNO_HAL_TIMER_ILLEGAL_ID);
+        errno = ERRNO_HAL_TIMER_ILLEGAL_ID;
         return -1;
         }
 
     if (unlikely (count > timer->max_count))
         {
-        errno_set (ERRNO_HAL_TIMER_ILLEGAL_RANGE);
+        errno = ERRNO_HAL_TIMER_ILLEGAL_RANGE;
         return -1;
         }
 
@@ -62,13 +62,13 @@ int hal_timer_disable (hal_timer_t * timer)
     {
     if (unlikely (timer == NULL))
         {
-        errno_set (ERRNO_HAL_TIMER_ILLEGAL_ID);
+        errno = ERRNO_HAL_TIMER_ILLEGAL_ID;
         return -1;
         }
 
     if (unlikely (timer->methods->disable == NULL))
         {
-        errno_set (ERRNO_HAL_TIMER_ILLEGAL_OPERATION);
+        errno = ERRNO_HAL_TIMER_ILLEGAL_OPERATION;
         return -1;
         }
 
@@ -89,7 +89,7 @@ int hal_timer_connect (hal_timer_t * timer, void (* pfn) (uintptr_t),
     {
     if (unlikely (timer == NULL))
         {
-        errno_set (ERRNO_HAL_TIMER_ILLEGAL_ID);
+        errno = ERRNO_HAL_TIMER_ILLEGAL_ID;
         return -1;
         }
 
@@ -110,7 +110,7 @@ unsigned long hal_timer_counter (hal_timer_t * timer)
     {
     if (unlikely (timer == NULL))
         {
-        errno_set (ERRNO_HAL_TIMER_ILLEGAL_ID);
+        errno = ERRNO_HAL_TIMER_ILLEGAL_ID;
         return 0;
         }
 
@@ -128,7 +128,7 @@ unsigned long hal_timer_period (hal_timer_t * timer)
     {
     if (unlikely (timer == NULL))
         {
-        errno_set (ERRNO_HAL_TIMER_ILLEGAL_ID);
+        errno = ERRNO_HAL_TIMER_ILLEGAL_ID;
         return 0;
         }
 
@@ -147,13 +147,13 @@ int hal_timer_postpone (hal_timer_t * timer, unsigned long count)
     {
     if (unlikely (timer == NULL))
         {
-        errno_set (ERRNO_HAL_TIMER_ILLEGAL_ID);
+        errno = ERRNO_HAL_TIMER_ILLEGAL_ID;
         return -1;
         }
 
     if (unlikely (timer->methods->postpone == NULL))
         {
-        errno_set (ERRNO_HAL_TIMER_ILLEGAL_OPERATION);
+        errno = ERRNO_HAL_TIMER_ILLEGAL_OPERATION;
         return -1;
         }
 
@@ -174,13 +174,13 @@ int hal_timer_prepone (hal_timer_t * timer, unsigned long count)
     {
     if (unlikely (timer == NULL))
         {
-        errno_set (ERRNO_HAL_TIMER_ILLEGAL_ID);
+        errno = ERRNO_HAL_TIMER_ILLEGAL_ID;
         return -1;
         }
 
     if (unlikely (timer->methods->prepone == NULL))
         {
-        errno_set (ERRNO_HAL_TIMER_ILLEGAL_OPERATION);
+        errno = ERRNO_HAL_TIMER_ILLEGAL_OPERATION;
         return -1;
         }
 
@@ -200,7 +200,7 @@ int hal_timer_register (hal_timer_t * timer)
     {
     if (unlikely (timer == NULL))
         {
-        errno_set (ERRNO_HAL_TIMER_ILLEGAL_ID);
+        errno = ERRNO_HAL_TIMER_ILLEGAL_ID;
         return -1;
         }
 
@@ -209,7 +209,7 @@ int hal_timer_register (hal_timer_t * timer)
                   timer->methods->counter == NULL ||
                   timer->methods->period  == NULL))
         {
-        errno_set (ERRNO_HAL_TIMER_ILLEGAL_CONFIG);
+        errno = ERRNO_HAL_TIMER_ILLEGAL_CONFIG;
         return -1;
         }
 
@@ -248,7 +248,7 @@ hal_timer_t * hal_timer_get (const char * name)
         return timer;
         }
 
-    errno_set (ERRNO_HAL_TIMER_NOT_ENOUGH_TIMER);
+    errno = ERRNO_HAL_TIMER_NOT_ENOUGH_TIMER;
 
     return NULL;
     }
@@ -267,7 +267,7 @@ int hal_timer_feat_get (hal_timer_t * timer, uint32_t * max_count,
     {
     if (unlikely (timer == NULL))
         {
-        errno_set (ERRNO_HAL_TIMER_ILLEGAL_ID);
+        errno = ERRNO_HAL_TIMER_ILLEGAL_ID;
         return -1;
         }
 

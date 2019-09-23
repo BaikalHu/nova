@@ -17,6 +17,6 @@ menu "LiteOS NOVA utils configuration"
 
 config DEBUG
     bool "Enable debug information"
-    default n
+    default y
 
 endmenu

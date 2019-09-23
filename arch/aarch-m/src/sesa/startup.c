@@ -24,7 +24,7 @@
  * return: NA, will not return
  */
 
-__naked__ void _start (void)
+__naked void _start (void)
     {
     __asm__ __volatile__
         (
@@ -65,7 +65,7 @@ __naked__ void _start (void)
  * return: NA
  */
 
-__naked__ void __SEGGER_init_copy (void)
+__naked void __SEGGER_init_copy (void)
     {
     __asm__ __volatile__
         (
@@ -93,7 +93,7 @@ __naked__ void __SEGGER_init_copy (void)
  * return: NA
  */
 
-__naked__ void __SEGGER_init_zero (void)
+__naked void __SEGGER_init_zero (void)
     {
     __asm__ __volatile__
         (
@@ -121,7 +121,7 @@ __naked__ void __SEGGER_init_zero (void)
  * return: NA
  */
 
-__naked__ void __aeabi_read_tp (void)
+__naked void __aeabi_read_tp (void)
     {
     __asm__ __volatile__
         (

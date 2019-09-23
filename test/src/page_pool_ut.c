@@ -119,7 +119,7 @@ static int __verify_pool (void)
     return 0;
     }
 
-static void __noreturn__ __stress_test (void)
+static void __noreturn __stress_test (void)
     {
     static uint16_t sizes [32] =
         {
@@ -225,7 +225,7 @@ static void __dump_pool (void)
 #ifdef __HOST__
 int main (void)
 #else
-static __noreturn__ int __ppt (void)
+static __noreturn int __ppt (void)
 #endif
     {
     struct range * range = ranges;

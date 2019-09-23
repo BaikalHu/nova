@@ -168,17 +168,17 @@ static int __stm32_uart_chan_init (struct stm32_uart * uart, USART_TypeDef * bas
                                    GPIO_TypeDef * rxgpio, uint32_t rxpin,
                                    uint32_t alter, bool lpuart)
     {
-    UART_HandleTypeDef * handle   = &uart->handle;
+    UART_HandleTypeDef * handle = &uart->handle;
     GPIO_InitTypeDef     io;
 
-    handle->Instance                    = base;
-    handle->Init.BaudRate               = baud;
-    handle->Init.WordLength             = UART_WORDLENGTH_8B;
-    handle->Init.StopBits               = UART_STOPBITS_1;
-    handle->Init.Parity                 = UART_PARITY_NONE;
-    handle->Init.Mode                   = UART_MODE_TX_RX;
-    handle->Init.HwFlowCtl              = UART_HWCONTROL_NONE;
-    handle->Init.OverSampling           = lpuart ? 0 :UART_OVERSAMPLING_16;
+    handle->Instance            = base;
+    handle->Init.BaudRate       = baud;
+    handle->Init.WordLength     = UART_WORDLENGTH_8B;
+    handle->Init.StopBits       = UART_STOPBITS_1;
+    handle->Init.Parity         = UART_PARITY_NONE;
+    handle->Init.Mode           = UART_MODE_TX_RX;
+    handle->Init.HwFlowCtl      = UART_HWCONTROL_NONE;
+    handle->Init.OverSampling   = lpuart ? 0 :UART_OVERSAMPLING_16;
 
     if (HAL_UART_Init (handle) != HAL_OK)
         {
@@ -187,14 +187,14 @@ static int __stm32_uart_chan_init (struct stm32_uart * uart, USART_TypeDef * bas
 
     io.Pin       = 1 << txpin;
     io.Mode      = GPIO_MODE_AF_PP;
-    io.Pull      = GPIO_NOPULL;
+    io.Pull      = GPIO_PULLUP;
     io.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
     io.Alternate = alter;
     HAL_GPIO_Init (txgpio, &io);
 
     io.Pin       = 1 << rxpin;
     io.Mode      = GPIO_MODE_AF_PP;
-    io.Pull      = GPIO_NOPULL;
+    io.Pull      = GPIO_PULLUP;
     io.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
     io.Alternate = alter;
     HAL_GPIO_Init (rxgpio, &io);

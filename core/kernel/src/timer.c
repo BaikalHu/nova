@@ -53,7 +53,7 @@ int timer_init (timer_id timer, uint16_t flags, unsigned long interval,
     {
     if (unlikely (timer == NULL))
         {
-        errno_set (ERRNO_TIMER_ILLEGAL_ID);
+        errno = ERRNO_TIMER_ILLEGAL_ID;
         return -1;
         }
 
@@ -155,7 +155,7 @@ int timer_start (timer_id timer)
     {
     if (timer == NULL)
         {
-        errno_set (ERRNO_TIMER_ILLEGAL_ID);
+        errno = ERRNO_TIMER_ILLEGAL_ID;
         return -1;
         }
 
@@ -196,7 +196,7 @@ int timer_stop (timer_id timer)
     {
     if (timer == NULL)
         {
-        errno_set (ERRNO_TIMER_ILLEGAL_ID);
+        errno = ERRNO_TIMER_ILLEGAL_ID;
         return -1;
         }
 
@@ -237,7 +237,7 @@ int timer_delete (timer_id timer)
     {
     if (timer == NULL)
         {
-        errno_set (ERRNO_TIMER_ILLEGAL_ID);
+        errno = ERRNO_TIMER_ILLEGAL_ID;
         return -1;
         }
 
@@ -268,19 +268,19 @@ static int __timer_init (obj_id obj, va_list valist)
 
     if (unlikely (flags > TIMER_FLAG_REPEATED))
         {
-        errno_set (ERRNO_TIMER_ILLEGAL_FLAG);
+        errno = ERRNO_TIMER_ILLEGAL_FLAG;
         return -1;
         }
 
     if (unlikely (interval == 0))
         {
-        errno_set (ERRNO_TIMER_ILLEGAL_INTERVAL);
+        errno = ERRNO_TIMER_ILLEGAL_INTERVAL;
         return -1;
         }
 
     if (unlikely (pfn == NULL))
         {
-        errno_set (ERRNO_TIMER_ILLEGAL_PFN);
+        errno = ERRNO_TIMER_ILLEGAL_PFN;
         return -1;
         }
 

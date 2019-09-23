@@ -40,7 +40,7 @@ uint32_t HAL_GetTick (void)
   * @param  line: The line in file as a number.
   * @retval None
   */
-void __noreturn__ _Error_Handler (char * file, int line)
+void __noreturn _Error_Handler (char * file, int line)
     {
     /* USER CODE BEGIN Error_Handler_Debug */
     /* User can add his own implementation to report the HAL error return state */

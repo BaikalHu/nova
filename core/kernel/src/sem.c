@@ -53,7 +53,7 @@ int sem_init (sem_t * sem, unsigned int value)
     {
     if (unlikely (sem == NULL))
         {
-        errno_set (ERRNO_SEM_ILLEGAL_ID);
+        errno = ERRNO_SEM_ILLEGAL_ID;
         return -1;
         }
 
@@ -118,7 +118,7 @@ int sem_destroy (sem_t * sem)
     {
     if (unlikely (sem == NULL))
         {
-        errno_set (ERRNO_SEM_ILLEGAL_ID);
+        errno = ERRNO_SEM_ILLEGAL_ID;
         return -1;
         }
 
@@ -184,7 +184,7 @@ int sem_timedwait (sem_t * sem, unsigned int timeout)
 
     if (timeout == 0)
         {
-        errno_set (ERRNO_SEM_UNAVAILABLE);
+        errno = ERRNO_SEM_UNAVAILABLE;
         return -1;
         }
 
@@ -232,7 +232,7 @@ int __sem_post (uintptr_t arg1, uintptr_t arg2)
         {
         if (unlikely (!atomic_uint_add_ne (&sem->count, UINT_MAX, 1)))
             {
-            errno_set (ERRNO_SEM_OVERFLOW);
+            errno = ERRNO_SEM_OVERFLOW;
             return -1;      /* overflow */
             }
         }
@@ -257,7 +257,7 @@ int sem_post (sem_t * sem)
     {
     if (unlikely (sem == NULL))
         {
-        errno_set (ERRNO_SEM_ILLEGAL_ID);
+        errno = ERRNO_SEM_ILLEGAL_ID;
         return -1;
         }
 

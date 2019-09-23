@@ -62,7 +62,7 @@ hal_i2c_t * hal_i2c_open (const char * name)
 
     mutex_unlock (&__bus_lock);
 
-    errno_set (ERRNO_HAL_I2C_NO_MATCH);
+    errno = ERRNO_HAL_I2C_NO_MATCH;
 
     return NULL;
     }
@@ -106,13 +106,13 @@ int hal_i2c_register (hal_i2c_t * i2c, const char * name,
 
     if (unlikely (i2c == NULL))
         {
-        errno_set (ERRNO_HAL_I2C_ILLEGAL_ID);
+        errno = ERRNO_HAL_I2C_ILLEGAL_ID;
         return -1;
         }
 
     if (unlikely (name == NULL || methods == NULL))
         {
-        errno_set (ERRNO_HAL_I2C_ILLEGAL_CONFIG);
+        errno = ERRNO_HAL_I2C_ILLEGAL_CONFIG;
         return -1;
         }
 
@@ -153,7 +153,7 @@ int hal_i2c_xfer (hal_i2c_t * i2c, uint16_t addr, const uint8_t * data,
 
     if (unlikely (i2c == NULL))
         {
-        errno_set (ERRNO_HAL_I2C_ILLEGAL_ID);
+        errno = ERRNO_HAL_I2C_ILLEGAL_ID;
         return -1;
         }
 
@@ -185,7 +185,7 @@ int hal_i2c_recv (hal_i2c_t * i2c, uint16_t addr, uint8_t * data, uint16_t size)
 
     if (unlikely (i2c == NULL))
         {
-        errno_set (ERRNO_HAL_I2C_ILLEGAL_ID);
+        errno = ERRNO_HAL_I2C_ILLEGAL_ID;
         return -1;
         }
 
@@ -317,7 +317,7 @@ hal_i2c_dev_t * hal_i2c_dev_open (const char * name)
 
     mutex_unlock (&__dev_lock);
 
-    errno_set (ERRNO_HAL_I2C_NO_MATCH);
+    errno = ERRNO_HAL_I2C_NO_MATCH;
 
     return NULL;
     }

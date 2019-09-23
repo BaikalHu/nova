@@ -59,7 +59,7 @@ int event_init (event_id event)
     {
     if (unlikely (event == NULL))
         {
-        errno_set (ERRNO_EVENT_ILLEGAL_ID);
+        errno = ERRNO_EVENT_ILLEGAL_ID;
         return -1;
         }
 
@@ -123,7 +123,7 @@ int event_destroy (event_id event)
     {
     if (unlikely (event == NULL))
         {
-        errno_set (ERRNO_EVENT_ILLEGAL_ID);
+        errno = ERRNO_EVENT_ILLEGAL_ID;
         return -1;
         }
 
@@ -167,7 +167,7 @@ static int __event_feed (task_id task, event_id event, unsigned int timeout)
                 goto got;
             break;
         default:
-            errno_set (ERRNO_EVENT_ILLEGAL_OPERATION);
+            errno = ERRNO_EVENT_ILLEGAL_OPERATION;
             return -1;
         }
 
@@ -178,7 +178,7 @@ static int __event_feed (task_id task, event_id event, unsigned int timeout)
 
         if (task == current)
             {
-            errno_set (ERRNO_EVENT_UNAVAILABLE);
+            errno = ERRNO_EVENT_UNAVAILABLE;
             }
 
         return -1;
@@ -230,7 +230,7 @@ int event_timedrecv (event_id event, uint32_t wanted, uint32_t option,
 
     if (unlikely (event == NULL))
         {
-        errno_set (ERRNO_EVENT_ILLEGAL_ID);
+        errno = ERRNO_EVENT_ILLEGAL_ID;
         return -1;
         }
 
@@ -242,7 +242,7 @@ int event_timedrecv (event_id event, uint32_t wanted, uint32_t option,
         case EVENT_WAIT_ANY:
             break;
         default:
-            errno_set (ERRNO_EVENT_ILLEGAL_OPERATION);
+            errno = ERRNO_EVENT_ILLEGAL_OPERATION;
             return -1;
         }
 
@@ -343,13 +343,13 @@ int event_send (event_id event, uint32_t events)
     {
     if (unlikely (event == NULL))
         {
-        errno_set (ERRNO_EVENT_ILLEGAL_ID);
+        errno = ERRNO_EVENT_ILLEGAL_ID;
         return -1;
         }
 
     if (unlikely (events == 0))
         {
-        errno_set ((ERRNO_EVENT_ILLEGAL_OPERATION));
+        errno = (ERRNO_EVENT_ILLEGAL_OPERATION);
         return -1;
         }
 

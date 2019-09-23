@@ -17,7 +17,7 @@
 
 #include <config.h>
 #include <heap.h>
-#include <mem.h>
+#include <phys_mem.h>
 #include <errno.h>
 #include <class.h>
 #include <init.h>
@@ -103,7 +103,7 @@ int heap_init (heap_t * heap)
     {
     if (heap == NULL)
         {
-        errno_set (ERRNO_HEAP_ILLEGAL_ID);
+        errno = ERRNO_HEAP_ILLEGAL_ID;
         return -1;
         }
 
@@ -136,13 +136,13 @@ static int __heap_add (heap_t * heap, char * buff, size_t size)
 
     if (unlikely (heap == NULL))
         {
-        errno_set (ERRNO_HEAP_ILLEGAL_ID);
+        errno = ERRNO_HEAP_ILLEGAL_ID;
         return -1;
         }
 
     if (unlikely (buff == NULL))
         {
-        errno_set (ERRNO_HEAP_ILLEGAL_BLOCK);
+        errno = ERRNO_HEAP_ILLEGAL_BLOCK;
         return -1;
         }
 
@@ -152,13 +152,13 @@ static int __heap_add (heap_t * heap, char * buff, size_t size)
 
     if (unlikely (buff > (buff + size)))
         {
-        errno_set (ERRNO_HEAP_ILLEGAL_BLOCK);
+        errno = ERRNO_HEAP_ILLEGAL_BLOCK;
         return -1;
         }
 
     if (unlikely (size < MIN_BLOCK_SIZE))
         {
-        errno_set (ERRNO_HEAP_ILLEGAL_BLOCK);
+        errno = ERRNO_HEAP_ILLEGAL_BLOCK;
         return -1;
         }
 
@@ -427,7 +427,7 @@ char * heap_alloc_align (heap_t * heap, size_t align, size_t bytes)
 
     if (heap == NULL)
         {
-        errno_set (ERRNO_HEAP_ILLEGAL_ID);
+        errno = ERRNO_HEAP_ILLEGAL_ID;
         return NULL;
         }
 
@@ -435,7 +435,7 @@ char * heap_alloc_align (heap_t * heap, size_t align, size_t bytes)
 
     if (align & (align - 1))
         {
-        errno_set (ERRNO_HEAP_ILLEGAL_ALIGN);
+        errno = ERRNO_HEAP_ILLEGAL_ALIGN;
         return NULL;
         }
 
@@ -467,7 +467,7 @@ char * heap_alloc_align (heap_t * heap, size_t align, size_t bytes)
 
         if (mem == NULL)
             {
-            errno_set (ERRNO_HEAP_NOT_ENOUGH_MEMORY);
+            errno = ERRNO_HEAP_NOT_ENOUGH_MEMORY;
             }
         }
 
@@ -827,7 +827,7 @@ static inline void __dump_block (cmder_t * cmder, block_t * block)
         } while (1);
     }
 
-void __cmd_dump_heap (cmder_t * cmder, heap_t * heap, bool show_chunk)
+static void __cmd_dump_heap (cmder_t * cmder, heap_t * heap, bool show_chunk)
     {
     block_t * block = heap->blocks;
 
@@ -867,4 +867,41 @@ void __cmd_dump_heap (cmder_t * cmder, heap_t * heap, bool show_chunk)
 
     mutex_unlock (&heap->mux);
     }
+
+static int __cmd_meminfo (cmder_t * cmder, int argc, char * argv [])
+    {
+    const struct phys_mem * spm = system_phys_mem;
+    bool                    show_chunk = false;
+    int                     i;
+
+    for (i = 1; i < argc; i++)
+        {
+        if (strncmp (argv [i], "--chunk", 7) == 0)
+            {
+            show_chunk = true;
+            }
+        }
+
+    cmder_printf (cmder, "all physcial memory blocks:\n\n");
+
+    cmder_printf (cmder, "address    end        length    \n");
+    cmder_printf (cmder, "---------- ---------- ----------\n");
+
+    while (spm->end)
+        {
+        cmder_printf (cmder, "%10p %10p %10p\n", spm->start, spm->end - 1,
+                      spm->end - spm->start);
+        spm++;
+        }
+
+    cmder_printf (cmder, "\n[kernel_heap] statistics\n\n");
+
+    (void) __cmd_dump_heap (cmder, kernel_heap, show_chunk);
+
+    return 0;
+    }
+
+CMDER_CMD_DEF ("meminfo", "show memory information, usage: 'meminfo [--chunk]'",
+               __cmd_meminfo);
+
 #endif

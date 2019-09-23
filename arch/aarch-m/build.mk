@@ -6,4 +6,4 @@ src-$(CONFIG_SVC)     += svc.c
 src-$(CONFIG_MPU)     += mpu.c
 usr-y                 += user.c
 usr-$(CONFIG_SESA)    += sesa/*.c
-inc-g                 += h/ h/cmsis/
+inc-g-y               += h/ h/cmsis/

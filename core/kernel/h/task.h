@@ -127,7 +127,7 @@ typedef struct task
         deferred_job_t     job;
         };
 
-    uint32_t               errno;
+    uint32_t               error;
 
 #ifdef CONFIG_TASK_TLS
 
@@ -146,14 +146,14 @@ typedef int  (* task_foreach_pfn) (task_id, uintptr_t);
 
 /* inlines */
 
-static __always_inline__ void task_errno_set (task_id task, uint32_t errno)
+static __always_inline void task_errno_set (task_id task, uint32_t error)
     {
-    task->errno = errno;
+    task->error = error;
     }
 
-static __always_inline__ uint32_t task_errno_get (task_id task)
+static __always_inline uint32_t * task_errno_get (task_id task)
     {
-    return task->errno;
+    return &task->error;
     }
 
 /* externs */

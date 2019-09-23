@@ -14,7 +14,7 @@
  */
 
 #include <config.h>
-#include <mem.h>
+#include <phys_mem.h>
 
 #ifdef __KEIL__
 #define __stack_end__                       Image$$ARM_LIB_STACKHEAP$$ZI$$Limit

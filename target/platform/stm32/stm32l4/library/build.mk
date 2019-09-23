@@ -17,9 +17,9 @@ src-$(CONFIG_STM32_RCC)  += STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c        
 
 src-$(CONFIG_STM32_GPIO) += STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c
 
-inc-g                    += CMSIS/Device/ST/STM32L4xx/Include
-inc-g                    += STM32L4xx_HAL_Driver/Inc
-inc-g                    += .
+inc-g-y                  += CMSIS/Device/ST/STM32L4xx/Include
+inc-g-y                  += STM32L4xx_HAL_Driver/Inc
+inc-g-y                  += .
 
 cflags-l-$(CONFIG_KEIL)  += -Wno-switch-enum -Wno-covered-switch-default -Wno-missing-noreturn -Wno-conversion
 cflags-STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c +=  -Wno-embedded-directive

@@ -47,7 +47,7 @@ static void delay (void)
     task_delay (100);
     }
 
-static __noreturn__ void loop (void)
+static __noreturn void loop (void)
     {
     while (1) {}
     }
@@ -58,7 +58,7 @@ static int __cmd_hook_test (cmder_t * cmder, int argc, char * argv [])
     task_spawn ("delay2", 20, 0, 0x400, (int (*) (uintptr_t)) delay, 0);
     task_spawn ("loop1",  30, 0, 0x400, (int (*) (uintptr_t)) loop,  0);
     task_spawn ("loop2",  30, 0, 0x400, (int (*) (uintptr_t)) loop,  0);
-			
+
     return 0;
     }
 

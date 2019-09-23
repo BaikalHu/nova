@@ -66,4 +66,10 @@ config KPRINTF_UART_NAME
     default CMDER_UART_NAME if CMDER_UART
     default "uart0"
 
+config LWIP
+    bool "Enable LWIP support."
+    default n
+
+orsource "*/kconfig"
+
 endmenu

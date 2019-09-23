@@ -43,7 +43,7 @@ struct deferred_isr_q   deferred_isr_q = {0};
 
 /* typedefs */
 
-static __always_inline__ bool __deferred_isr_q_full (void)
+static __always_inline bool __deferred_isr_q_full (void)
     {
     return (deferred_isr_q.tail_idx - deferred_isr_q.head_idx) == DEFERRED_IRQ_JOB_SLOTS;
     }
@@ -54,7 +54,7 @@ static __always_inline__ bool __deferred_isr_q_full (void)
  * return: the index or -1 on error
  */
 
-__weak__ unsigned int deferred_isr_q_idx (void)
+__weak unsigned int deferred_isr_q_idx (void)
     {
     unsigned int  idx;
     unsigned long key = int_lock ();
@@ -79,7 +79,7 @@ static int deferred_isr_q_put (deferred_job_t * job)
 
     if (unlikely (idx == (unsigned int) -1))
         {
-        errno_set (ERRNO_DEFERRED_QUEUE_FULL);
+        errno = ERRNO_DEFERRED_QUEUE_FULL;
         return -1;
         }
 
@@ -152,7 +152,7 @@ int do_deferred (deferred_job_t * job)
     return event_send (&__deferred_event, 1);
     }
 
-static __always_inline__ void __do_deferred (deferred_job_t * job)
+static __always_inline void __do_deferred (deferred_job_t * job)
     {
     void (* rtn) (struct deferred_job *);
 
@@ -163,7 +163,7 @@ static __always_inline__ void __do_deferred (deferred_job_t * job)
     rtn (job);
     }
 
-static __noreturn__ int deferred_task (uintptr_t dummy)
+static __noreturn int deferred_task (uintptr_t dummy)
     {
     dlist_t        * dlist;
     deferred_job_t * job;

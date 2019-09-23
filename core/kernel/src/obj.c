@@ -32,7 +32,7 @@
 
 /* inlines */
 
-static __always_inline__ obj_id __obj_alloc (class_id class)
+static __always_inline obj_id __obj_alloc (class_id class)
     {
     if (class->alloc_rtn != NULL)
         {
@@ -44,7 +44,7 @@ static __always_inline__ obj_id __obj_alloc (class_id class)
         }
     }
 
-static __always_inline__ void __obj_free (class_id class, obj_id obj)
+static __always_inline void __obj_free (class_id class, obj_id obj)
     {
     if (class->free_rtn != NULL)
         {
@@ -58,7 +58,7 @@ static __always_inline__ void __obj_free (class_id class, obj_id obj)
 
 /* check if protection is not needed */
 
-static __always_inline__ bool __obj_no_protect (void)
+static __always_inline bool __obj_no_protect (void)
     {
     return int_context () || in_critical ();
     }
@@ -85,19 +85,19 @@ int obj_verify (class_id class, obj_id obj)
 
     if (unlikely (mem_try ((void *) &magic, (void *) &obj->magic, order)) != 0)
         {
-        errno_set (ERRNO_OBJ_ILLEGAL_ID);
+        errno = ERRNO_OBJ_ILLEGAL_ID;
         return -1;
         }
 
     if (unlikely (magic != (uintptr_t) obj))
         {
-        errno_set (ERRNO_OBJ_ILLEGAL_MAGIC);
+        errno = ERRNO_OBJ_ILLEGAL_MAGIC;
         return -1;
         }
 
     if (unlikely (obj->class != class))
         {
-        errno_set (ERRNO_OBJ_ILLEGAL_CLASS);
+        errno = ERRNO_OBJ_ILLEGAL_CLASS;
         return -1;
         }
 #endif
@@ -258,13 +258,13 @@ obj_id obj_open (class_id class, const char * name, int oflag, va_list valist)
         {
         if ((oflag & O_EXCL) != 0)
             {
-            errno_set (EEXIST);
+            errno = EEXIST;
             return NULL;
             }
 
         if ((obj->flags & OBJ_FLAGS_EXCL) != 0)
             {
-            errno_set (EACCES);
+            errno = EACCES;
             return NULL;
             }
 
@@ -273,7 +273,7 @@ obj_id obj_open (class_id class, const char * name, int oflag, va_list valist)
 
     if ((oflag & O_CREAT) == 0)
         {
-        errno_set (ENOENT);
+        errno = ENOENT;
         return NULL;
         }
 
@@ -325,7 +325,7 @@ int obj_destroy (class_id class, obj_id obj)
 
     if (unlikely (obj_verify (class, obj) != 0))
         {
-        errno_set (ERRNO_OBJ_ILLEGAL_ID);
+        errno = ERRNO_OBJ_ILLEGAL_ID;
         mutex_unlock (&class->lock);
         return -1;
         }

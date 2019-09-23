@@ -59,7 +59,7 @@ hal_uart_t * hal_uart_open (const char * name)
 
     mutex_unlock (&hal_uarts_lock);
 
-    errno_set (ERRNO_HAL_UART_NO_MATCH);
+    errno = ERRNO_HAL_UART_NO_MATCH;
 
     return NULL;
     }
@@ -79,19 +79,19 @@ size_t hal_uart_poll_read (hal_uart_t * uart, unsigned char * buff, size_t len)
 
     if (unlikely (uart == NULL))
         {
-        errno_set (ERRNO_HAL_UART_ILLEGAL_ID);
+        errno = ERRNO_HAL_UART_ILLEGAL_ID;
         return 0;
         }
 
     if (unlikely (buff == NULL))
         {
-        errno_set (ERRNO_HAL_UART_ILLEGAL_BUFF);
+        errno = ERRNO_HAL_UART_ILLEGAL_BUFF;
         return 0;
         }
 
     if (unlikely (uart->methods->poll_getc == NULL))
         {
-        errno_set (ERRNO_HAL_UART_ILLEGAL_OPERATION);
+        errno = ERRNO_HAL_UART_ILLEGAL_OPERATION;
         return 0;
         }
 
@@ -147,7 +147,7 @@ int hal_uart_getc (hal_uart_t * uart)
 
     if (unlikely (uart == NULL))
         {
-        errno_set (ERRNO_HAL_UART_ILLEGAL_ID);
+        errno = ERRNO_HAL_UART_ILLEGAL_ID;
         return -1;
         }
 
@@ -174,13 +174,13 @@ int hal_uart_poll_getc (hal_uart_t * uart)
     {
     if (unlikely (uart == NULL))
         {
-        errno_set (ERRNO_HAL_UART_ILLEGAL_ID);
+        errno = ERRNO_HAL_UART_ILLEGAL_ID;
         return 0;
         }
 
     if (unlikely (uart->methods->poll_putc == NULL))
         {
-        errno_set (ERRNO_HAL_UART_ILLEGAL_OPERATION);
+        errno = ERRNO_HAL_UART_ILLEGAL_OPERATION;
         return 0;
         }
 
@@ -202,13 +202,13 @@ size_t hal_uart_read (hal_uart_t * uart, unsigned char * buff, size_t len)
 
     if (unlikely (uart == NULL))
         {
-        errno_set (ERRNO_HAL_UART_ILLEGAL_ID);
+        errno = ERRNO_HAL_UART_ILLEGAL_ID;
         return 0;
         }
 
     if (unlikely (buff == NULL))
         {
-        errno_set (ERRNO_HAL_UART_ILLEGAL_BUFF);
+        errno = ERRNO_HAL_UART_ILLEGAL_BUFF;
         return 0;
         }
 
@@ -245,19 +245,19 @@ size_t hal_uart_poll_write (hal_uart_t * uart, const unsigned char * buff, size_
 
     if (unlikely (uart == NULL))
         {
-        errno_set (ERRNO_HAL_UART_ILLEGAL_ID);
+        errno = ERRNO_HAL_UART_ILLEGAL_ID;
         return 0;
         }
 
     if (unlikely (buff == NULL))
         {
-        errno_set (ERRNO_HAL_UART_ILLEGAL_BUFF);
+        errno = ERRNO_HAL_UART_ILLEGAL_BUFF;
         return 0;
         }
 
     if (unlikely (uart->methods->poll_putc == NULL))
         {
-        errno_set (ERRNO_HAL_UART_ILLEGAL_OPERATION);
+        errno = ERRNO_HAL_UART_ILLEGAL_OPERATION;
         return 0;
         }
 
@@ -315,7 +315,7 @@ size_t hal_uart_putc (hal_uart_t * uart, const unsigned char ch)
     {
     if (unlikely (uart == NULL))
         {
-        errno_set (ERRNO_HAL_UART_ILLEGAL_ID);
+        errno = ERRNO_HAL_UART_ILLEGAL_ID;
         return 0;
         }
 
@@ -339,13 +339,13 @@ size_t hal_uart_poll_putc (hal_uart_t * uart, const unsigned char ch)
     {
     if (unlikely (uart == NULL))
         {
-        errno_set (ERRNO_HAL_UART_ILLEGAL_ID);
+        errno = ERRNO_HAL_UART_ILLEGAL_ID;
         return 0;
         }
 
     if (unlikely (uart->methods->poll_putc == NULL))
         {
-        errno_set (ERRNO_HAL_UART_ILLEGAL_OPERATION);
+        errno = ERRNO_HAL_UART_ILLEGAL_OPERATION;
         return 0;
         }
 
@@ -367,13 +367,13 @@ size_t hal_uart_write (hal_uart_t * uart, const unsigned char * buff, size_t len
 
     if (unlikely (uart == NULL))
         {
-        errno_set (ERRNO_HAL_UART_ILLEGAL_ID);
+        errno = ERRNO_HAL_UART_ILLEGAL_ID;
         return 0;
         }
 
     if (unlikely (buff == NULL))
         {
-        errno_set (ERRNO_HAL_UART_ILLEGAL_BUFF);
+        errno = ERRNO_HAL_UART_ILLEGAL_BUFF;
         return 0;
         }
 
@@ -520,13 +520,13 @@ int hal_uart_register (hal_uart_t * uart, const char * name,
 
     if (unlikely (uart == NULL))
         {
-        errno_set (ERRNO_HAL_UART_ILLEGAL_ID);
+        errno = ERRNO_HAL_UART_ILLEGAL_ID;
         return -1;
         }
 
     if (unlikely (name == NULL || methods == NULL))
         {
-        errno_set (ERRNO_HAL_UART_ILLEGAL_CONFIG);
+        errno = ERRNO_HAL_UART_ILLEGAL_CONFIG;
         return -1;
         }
 
@@ -535,7 +535,7 @@ int hal_uart_register (hal_uart_t * uart, const char * name,
         case HAL_UART_MODE_INT:
             if (uart->methods->tx_start == NULL)
                 {
-                errno_set (ERRNO_HAL_UART_ILLEGAL_CONFIG);
+                errno = ERRNO_HAL_UART_ILLEGAL_CONFIG;
                 return -1;
                 }
 
@@ -544,13 +544,13 @@ int hal_uart_register (hal_uart_t * uart, const char * name,
             if ((uart->methods->poll_putc == NULL) ||
                 (uart->methods->poll_getc == NULL))
                 {
-                errno_set (ERRNO_HAL_UART_ILLEGAL_CONFIG);
+                errno = ERRNO_HAL_UART_ILLEGAL_CONFIG;
                 return -1;
                 }
 
             break;
         default:
-            errno_set (ERRNO_HAL_UART_ILLEGAL_CONFIG);
+            errno = ERRNO_HAL_UART_ILLEGAL_CONFIG;
             return -1;
         }
 

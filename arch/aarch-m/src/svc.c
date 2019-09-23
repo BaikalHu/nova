@@ -29,7 +29,7 @@ int svc_tls_slot;
  * return: NA, will not return
  */
 
-__naked__ void svc_handler (void)
+__naked void svc_handler (void)
     {
     __asm__ __volatile__
         (

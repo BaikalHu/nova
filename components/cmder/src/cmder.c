@@ -1171,7 +1171,7 @@ static inline void __cmder_init (void)
         }
     }
 
-__noreturn__ int cmder_loop (uintptr_t arg)
+__noreturn int cmder_loop (uintptr_t arg)
     {
     cmder_t * cmder = (cmder_t *) arg;
 

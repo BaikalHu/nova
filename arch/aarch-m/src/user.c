@@ -21,7 +21,7 @@
 
 extern int main (void);
 
-void __noreturn__ __rt_entry (void)
+void __noreturn __rt_entry (void)
     {
     main ();
     task_exit ();
@@ -38,7 +38,7 @@ void __noreturn__ __rt_entry (void)
  * return: NA
  */
 
-__section__ (vectors) __unused__  __naked__ void app_entry (void)
+__section__ (vectors) __unused __naked void app_entry (void)
     {
     __asm__ __volatile__
         (
@@ -122,7 +122,7 @@ void reset_handler (void)
  *   In AArch64 state, set x0 and x2 to zero and return.
  */
 
-__naked__ void __user_setup_stackheap (void)
+__naked void __user_setup_stackheap (void)
     {
     __asm__ __volatile__
         (

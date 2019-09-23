@@ -87,7 +87,6 @@ SYSCALL_MODULE 19
     mem_try
 
 SYSCALL_MODULE 25
-    errno_set
     errno_get
 
 SYSCALL_MODULE 27

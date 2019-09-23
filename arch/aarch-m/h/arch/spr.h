@@ -280,7 +280,7 @@ static struct scb * const scb = (struct scb *) 0xe000ed00;
 
 /* inlines */
 
-static __always_inline__ uint32_t __get_ipsr (void)
+static __always_inline uint32_t __get_ipsr (void)
     {
     uint32_t ipsr;
 

@@ -63,7 +63,7 @@ static int devfs_open (uintptr_t mp_data, uintptr_t * fl_data_ptr,
 
     if (file == NULL)
         {
-        errno_set (ENOENT);
+        errno = ENOENT;
         return -1;
         }
 
@@ -85,7 +85,7 @@ static int devfs_read (uintptr_t fl_data, char * buff, size_t nbyte)
 
     if (file->ops->read == NULL)
         {
-        errno_set (ENOTSUP);
+        errno = ENOTSUP;
         return -1;
         }
 
@@ -98,7 +98,7 @@ static int devfs_write (uintptr_t fl_data, const char * buff, size_t nbyte)
 
     if (file->ops->write == NULL)
         {
-        errno_set (ENOTSUP);
+        errno = ENOTSUP;
         return -1;
         }
 
@@ -111,7 +111,7 @@ static int devfs_lseek (uintptr_t fl_data, int off, int whence)
 
     if (file->ops->lseek == NULL)
         {
-        errno_set (ENOTSUP);
+        errno = ENOTSUP;
         return -1;
         }
 
@@ -124,7 +124,7 @@ static int devfs_ioctl (uintptr_t fl_data, int request, va_list valist)
 
     if (file->ops->ioctl == NULL)
         {
-        errno_set (ENOTSUP);
+        errno = ENOTSUP;
         return -1;
         }
 
@@ -137,7 +137,7 @@ static int devfs_sync (uintptr_t fl_data)
 
     if (file->ops->sync == NULL)
         {
-        errno_set (ENOTSUP);
+        errno = ENOTSUP;
         return -1;
         }
 
@@ -150,7 +150,7 @@ static int devfs_stat (uintptr_t mp_data, const char * name, struct stat * stat)
 
     if (file == NULL)
         {
-        errno_set (EBADF);
+        errno = EBADF;
         return -1;
         }
 
@@ -189,7 +189,7 @@ static int devfs_opendir (uintptr_t mp_data, uintptr_t * dr_data_ptr, const char
 
     if (unlikely (*path != '\0'))
         {
-        errno_set (ENOENT);
+        errno = ENOENT;
         return -1;
         }
 

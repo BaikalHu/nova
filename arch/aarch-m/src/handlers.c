@@ -41,7 +41,7 @@
  * GNUC: reset_handler -> __rt_entry
  */
 
-void __noreturn__ __rt_entry (void)
+void __noreturn __rt_entry (void)
     {
 #ifdef __KEIL__
     __rt_lib_init (NULL, NULL);
@@ -65,7 +65,7 @@ void _fp_init (void)
  * return: NA
  */
 
-__naked__ void reset_handler (void)
+__naked void reset_handler (void)
     {
     __asm__ __volatile__
         (
@@ -157,7 +157,7 @@ __naked__ void reset_handler (void)
  * return: NA
  */
 
-__naked__ void irq_handler (void)
+__naked void irq_handler (void)
     {
     __asm__ __volatile__
         (
@@ -209,7 +209,7 @@ __naked__ void irq_handler (void)
  * return: NA
  */
 
-__naked__ void exc_handler (void)
+__naked void exc_handler (void)
     {
     __asm__ __volatile__
         (
@@ -269,7 +269,7 @@ __naked__ void exc_handler (void)
  * return: NA
  */
 
-__naked__ __weak__ void systick_handler (void)
+__naked __weak void systick_handler (void)
     {
     __asm__ __volatile__
         (

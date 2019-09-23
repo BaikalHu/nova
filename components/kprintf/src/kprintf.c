@@ -38,7 +38,7 @@ static struct hal_uart * __kprintf_uart = NULL;
  * implement such a routine (usually in poll mode)
  */
 
-__weak__ int early_putc (unsigned char ch)
+__weak int early_putc (unsigned char ch)
     {
     return 0;
     }

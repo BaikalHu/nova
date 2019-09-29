@@ -24,6 +24,7 @@
 #include <task.h>
 #include <critical.h>
 #include <errno.h>
+#include <warn.h>
 
 #ifdef CONFIG_PROFILE
 #include <profile.h>
@@ -192,7 +193,7 @@ __weak int critical_exec (int (* job) (uintptr_t, uintptr_t),
 
     /* check if critical stack overflow */
 
-    BUG_ON (critical_q.magic != CRITICAL_MAGIC);
+    BUG_ON (critical_q.magic != CRITICAL_MAGIC, "critical stack overflow!");
 #endif
 
     /*
@@ -236,11 +237,9 @@ static __always_inline bool __no_sleepable (void)
 int do_critical_might_sleep (int (* job) (uintptr_t, uintptr_t),
                              uintptr_t arg1, uintptr_t arg2)
     {
-    if (unlikely (__no_sleepable ()))
-        {
-        errno = ERRNO_CRITICAL_ILLEGAL_OPERATION;
-        return -1;
-        }
+    WARN_ON (__no_sleepable (),
+             errno = ERRNO_CRITICAL_ILLEGAL_OPERATION; return -1,
+             "do_critical_might_sleep () invoked from atomic context!");
 
     return critical_exec (job, arg1, arg2);
     }
@@ -257,11 +256,9 @@ int do_critical_might_sleep (int (* job) (uintptr_t, uintptr_t),
 int do_critical_non_irq (int (* job) (uintptr_t, uintptr_t),
                          uintptr_t arg1, uintptr_t arg2)
     {
-    if (unlikely (int_context ()))
-        {
-        errno = ERRNO_CRITICAL_ILLEGAL_OPERATION;
-        return -1;
-        }
+    WARN_ON (int_context (),
+             errno = ERRNO_CRITICAL_ILLEGAL_OPERATION; return -1,
+             "do_critical_non_irq () invoked from ISR context!");
 
     return critical_exec (job, arg1, arg2);
     }

@@ -24,6 +24,7 @@
 #include <critical.h>
 #include <errno.h>
 #include <init.h>
+#include <warn.h>
 #include <bug.h>
 
 #ifdef CONFIG_SYSCALL
@@ -57,11 +58,9 @@ class_t event_class [1];
 
 int event_init (event_id event)
     {
-    if (unlikely (event == NULL))
-        {
-        errno = ERRNO_EVENT_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (event == NULL,
+             errno = ERRNO_EVENT_ILLEGAL_ID; return -1,
+             "Invalid event object!");
 
     return obj_init (event_class, &event->obj);
     }
@@ -121,11 +120,9 @@ event_id event_open (const char * name, int oflag, ...)
 
 int event_destroy (event_id event)
     {
-    if (unlikely (event == NULL))
-        {
-        errno = ERRNO_EVENT_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (event == NULL,
+             errno = ERRNO_EVENT_ILLEGAL_ID; return -1,
+             "Invalid event object!");
 
     return obj_destroy (event_class, &event->obj);
     }
@@ -167,6 +164,7 @@ static int __event_feed (task_id task, event_id event, unsigned int timeout)
                 goto got;
             break;
         default:
+            WARN ("Event option not supported!");
             errno = ERRNO_EVENT_ILLEGAL_OPERATION;
             return -1;
         }
@@ -228,11 +226,9 @@ int event_timedrecv (event_id event, uint32_t wanted, uint32_t option,
     {
     struct event_data data;
 
-    if (unlikely (event == NULL))
-        {
-        errno = ERRNO_EVENT_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (event == NULL,
+             errno = ERRNO_EVENT_ILLEGAL_ID; return -1,
+             "Invalid event object!");
 
     /* check if option valid */
 
@@ -242,6 +238,7 @@ int event_timedrecv (event_id event, uint32_t wanted, uint32_t option,
         case EVENT_WAIT_ANY:
             break;
         default:
+            WARN ("Invalid event option!");
             errno = ERRNO_EVENT_ILLEGAL_OPERATION;
             return -1;
         }
@@ -341,17 +338,13 @@ static int __event_send (uintptr_t arg1, uintptr_t arg2)
 
 int event_send (event_id event, uint32_t events)
     {
-    if (unlikely (event == NULL))
-        {
-        errno = ERRNO_EVENT_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (event == NULL,
+             errno = ERRNO_EVENT_ILLEGAL_ID; return -1,
+             "Invalid event object!");
 
-    if (unlikely (events == 0))
-        {
-        errno = (ERRNO_EVENT_ILLEGAL_OPERATION);
-        return -1;
-        }
+    WARN_ON (events == 0,
+             errno = ERRNO_EVENT_ILLEGAL_OPERATION; return -1,
+             "Invalid events!");
 
     return do_critical (__event_send, (uintptr_t) event, (uintptr_t) events);
     }
@@ -368,7 +361,7 @@ static int __event_init (obj_id obj, va_list valist)
 
 static int __event_destroy_critical (uintptr_t arg1, uintptr_t arg2)
     {
-    event_id  event= (event_id) arg1;
+    event_id  event = (event_id) arg1;
     dlist_t * itr, * n;
 
     (void) arg2;
@@ -384,7 +377,7 @@ static int __event_destroy_critical (uintptr_t arg1, uintptr_t arg2)
         {
         task_id task = container_of (itr, task_t, pq_node);
 
-        task_resume    (task);
+        task_resume (task);
 
         /* set the errno of the task */
 
@@ -411,10 +404,9 @@ static int __event_destroy (obj_id obj)
 
 static int event_lib_init (void)
     {
-    int ret = class_init (event_class, MID_EVENT, sizeof (event_t),
-                          __event_init, __event_destroy, NULL, NULL);
-
-    BUG_ON (ret != 0);
+    BUG_ON (class_init (event_class, MID_EVENT, sizeof (event_t),
+                        __event_init, __event_destroy, NULL, NULL),
+            "fail to initialize event_class!");
 
     return 0;
     }

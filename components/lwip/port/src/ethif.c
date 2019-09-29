@@ -18,6 +18,7 @@
 #include <config.h>
 #include <msg_queue.h>
 #include <bug.h>
+#include <warn.h>
 #include <init.h>
 #include <mutex.h>
 
@@ -99,9 +100,16 @@ static __noreturn void __ethif_input_task (void)
         }
     }
 
+/**
+ * ethif_rx - notify rx event
+ * @ethif: the ethif object
+ *
+ * return: NA
+ */
+
 void ethif_rx (struct ethif * ethif)
     {
-    WARN_ON (mq_trysend (__input_netif_mq, (void *) &ethif, sizeof (void *)) != 0);
+    (void) mq_trysend (__input_netif_mq, (void *) &ethif, sizeof (void *));
     }
 
 static void __arp_timer (void * arg)
@@ -110,6 +118,8 @@ static void __arp_timer (void * arg)
     sys_timeout (ARP_TMR_INTERVAL, __arp_timer, NULL);
     }
 
+#if LWIP_ARP || LWIP_ETHERNET
+
 static int __get_mac_num (char ch)
     {
     if ((ch >= '0') && (ch <= '9'))
@@ -117,7 +127,9 @@ static int __get_mac_num (char ch)
         return ch - '0';
         }
 
-    ch |= 0x20;
+    /* upper -> lower, lower keep no changed */
+
+    ch |= ('a' - 'A');
 
     if ((ch >= 'a') && (ch <= 'f'))
         {
@@ -132,7 +144,7 @@ static int __get_mac (u8_t * mac, const char * str)
     int  i;
     int  m;
     int  n;
-    char s = str[2];    // split char, "-" or ":"
+    char s = str [2];   // split char, "-" or ":"
 
     if ((s != ':') && (s != '-'))
         {
@@ -159,6 +171,8 @@ static int __get_mac (u8_t * mac, const char * str)
 
     return i == 6 && str [-1] == '\0' ? 0 : -1;
     }
+
+#endif
 
 static int __get_ip_n (const char * str, const char * e)
     {
@@ -225,8 +239,6 @@ static err_t __ethif_init (struct netif * netif)
     {
     struct ethif * eth;
 
-    LWIP_ASSERT ("netif != NULL", (netif != NULL));
-
     eth = container_of (netif, struct ethif, netif);
 
 #if LWIP_NETIF_HOSTNAME
@@ -244,10 +256,9 @@ static err_t __ethif_init (struct netif * netif)
 
     netif->mtu = CONFIG_MTU_VALUE;
 
-    if (__get_mac (netif->hwaddr, eth->mac) != 0)
-        {
-        return -1;
-        }
+    WARN_ON (__get_mac (netif->hwaddr, eth->mac) != 0,
+             return -1,
+             "MAC address (%s) format not correct!", eth->mac);
 
     /* Accept broadcast address and ARP traffic */
     /* don't set NETIF_FLAG_ETHARP if this device is not an ethernet one */
@@ -259,16 +270,25 @@ static err_t __ethif_init (struct netif * netif)
 #endif /* LWIP_ARP */
 #endif /* LWIP_ARP || LWIP_ETHERNET */
 
-    if (eth->ops->start (eth) != 0)
-        {
-        LWIP_DEBUGF (NETIF_DEBUG, ("__ethif_init: ops->init fail\n"));
-        return ERR_IF;
-        }
+    WARN_ON (eth->ops->start (eth) != 0,
+             return ERR_IF,
+             "ops->start fail!");
 
     sys_timeout (ARP_TMR_INTERVAL, __arp_timer, NULL);
 
     return ERR_OK;
     }
+
+/**
+ * ifconfig - configure an ethif
+ * @name:     the name of the ethif
+ * @op:       "up" or "down"
+ * @ip_str:   the ip address string
+ * @mask_str: the mask string
+ * @gw_str:   the gateway address string
+ *
+ * return: 0 on success, negtive value on error
+ */
 
 int ifconfig (const char * name, const char * op, const char * ip_str,
               const char * mask_str, const char * gw_str)
@@ -328,21 +348,26 @@ int ifconfig (const char * name, const char * op, const char * ip_str,
     return 0;
     }
 
+/**
+ * ethif_register - register an ethif
+ * @ethif:  the ethif object
+ * @name:   the name of the ethif
+ * @ops:    the operations
+ * @mac:    the mac address string, format aa-bb-cc-xx-yy-zz or aa:bb:cc:xx:yy:zz
+ *
+ * return: 0 on success, negtive value on error
+ */
+
 int ethif_register (struct ethif * ethif, const char * name, struct netif_ops * ops,
                     const char * mac)
     {
-    if ((ops == NULL) || (ops->input == NULL) || (ops->output == NULL) ||
-        (ops->start == NULL))
-        {
-        WARN ("invalid ethif ops!");
-        return -1;
-        }
-
-    if (name == NULL)
-        {
-        WARN ("invalid ethif name!");
-        return -1;
-        }
+    BUG_ON (ethif       == NULL, "Invalid ethif!");
+    BUG_ON (name        == NULL, "Invalid ethif name!");
+    BUG_ON (ops         == NULL, "Invalid ethif ops!");
+    BUG_ON (mac         == NULL, "Invalid ethif MAC address!");
+    BUG_ON (ops->input  == NULL, "Invalid ethif ops!");
+    BUG_ON (ops->output == NULL, "Invalid ethif ops!");
+    BUG_ON (ops->start  == NULL, "Invalid ethif ops!");
 
     memset (ethif, 0, sizeof (struct ethif));
 
@@ -353,17 +378,17 @@ int ethif_register (struct ethif * ethif, const char * name, struct netif_ops * 
     if (netif_add (&ethif->netif, NULL, NULL, NULL, NULL, __ethif_init,
                    ethernet_input) == NULL)
         {
-        WARN ("fail to add eth");
+        WARN ("Fail to add ethif!");
 
         return -1;
         }
 
-    if (mutex_init (&ethif->lock) != 0)
+    if (unlikely (mutex_init (&ethif->lock) != 0))
         {
         return -1;
         }
 
-    if (mutex_lock (&__ethifs_lock) != 0)
+    if (unlikely (mutex_lock (&__ethifs_lock) != 0))
         {
         mutex_destroy (&ethif->lock);
         return -1;
@@ -376,8 +401,19 @@ int ethif_register (struct ethif * ethif, const char * name, struct netif_ops * 
     return 0;
     }
 
+/**
+ * ethif_getmac - get the mac address from an ethif
+ * @ethif:  the ethif object
+ *
+ * return: the address of the mac address held in the ethif
+ */
+
 u8_t * ethif_getmac (struct ethif * ethif)
     {
+    WARN_ON (ethif == NULL,
+             return NULL,
+             "Invalid ethif!");
+
     return ethif->netif.hwaddr;
     }
 
@@ -535,25 +571,21 @@ CMDER_CMD_DEF ("ifconfig", "view and change the configuration of the network int
 
 static int ethif_lib_init (void)
     {
-    if (task_spawn (CONFIG_ETHIF_TASK_NAME, CONFIG_ETHIF_TASK_PRIO, 0,
-                    CONFIG_ETHIF_TASK_STACK_SIZE,
-                    (int (*) (uintptr_t)) __ethif_input_task, 0) == NULL)
-        {
-        WARN ("fail to create ethif task!");
-        return -1;
-        }
+    WARN_ON (task_spawn (CONFIG_ETHIF_TASK_NAME, CONFIG_ETHIF_TASK_PRIO, 0,
+                         CONFIG_ETHIF_TASK_STACK_SIZE,
+                         (int (*) (uintptr_t)) __ethif_input_task, 0) == NULL,
+             return -1,
+             "Fail to create ethif task!");
 
     __input_netif_mq = mq_create (sizeof (void *), 16, 0);
 
-    if (__input_netif_mq == NULL)
+    if (unlikely (__input_netif_mq == NULL))
         {
-        WARN ("fail to create netif input queue!");
         return -1;
         }
 
-    if (mutex_init (&__ethifs_lock) != 0)
+    if (unlikely (mutex_init (&__ethifs_lock) != 0))
         {
-        WARN ("fail to init __ethifs_lock!");
         return -1;
         }
 

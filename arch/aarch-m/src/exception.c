@@ -158,11 +158,11 @@ void arch_exc_handler (exc_info_t * context)
 
     // TODO: hook, signal
 
-    BUG_ON ((context->exclr & 0xf) == 1);   // exception happen in handler mode
+    BUG_ON ((context->exclr & 0xf) == 1, "Exception happen in handler mode!");
 
-    BUG_ON (in_critical ());                // exception happen in critical
+    BUG_ON (in_critical (),              "Exception happen in critical!");
 
-    BUG_ON (task_suspend (current) != 0);   // kernel task fail
+    BUG_ON (task_suspend (current) != 0, "Kernel task crash!");
 
 #ifdef CONFIG_AARCH_M_MAINLINE
 

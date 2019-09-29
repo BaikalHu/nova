@@ -81,4 +81,4 @@ static __always_inline void isb (void)
 }
 #endif /* __cplusplus */
 
-#endif  /* __AARCH_M_SYNC_H__ */
+#endif /* __AARCH_M_SYNC_H__ */

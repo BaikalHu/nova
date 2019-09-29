@@ -219,7 +219,7 @@ def add_files (f, bdf_ini):
 
 def main ():
     project = libconf.get_project ()
-    bdf_ini = libconf.get_bdf_ini ()
+    bdf_ini = libconf.get_bdf_ini (sys.argv [1], prjname + ".uvprojx")
 
     kconf   = libconf.get_kconfig ()
 

@@ -17,6 +17,7 @@ menu "LiteOS NOVA utils configuration"
 
 config DEBUG
     bool "Enable debug information"
+    select KPRINTF
     default y
 
 endmenu

@@ -31,6 +31,7 @@
 #include <errno.h>
 #include <bug.h>
 #include <init.h>
+#include <warn.h>
 
 #ifdef CONFIG_TASK_HOOK
 #include <hook_table.h>
@@ -104,8 +105,6 @@ static task_switch_pfn  __task_switch_hooks [CONFIG_NR_TASK_SWITCH_HOOK_SLOTS] =
 #endif
 
 /* externs */
-
-extern task_t           defer [1];
 
 /* inlines */
 
@@ -231,11 +230,7 @@ void task_switch_hook (task_id old, task_id new)
     {
     int idx = 0;
 
-    if (task_stack_overflow (old))
-        {
-        kprintf ("last task is: %p, name: %s\n", old, old->name);
-        BUG ("task stack overflow!");
-        }
+    BUG_ON (task_stack_overflow (old), "task (%p:%s) stack overflow\n", old, old->name);
 
     do
         {
@@ -351,23 +346,17 @@ int task_init (task_id task, char * stack, const char * name, uint8_t prio,
                uint32_t options, size_t stack_size, int (* entry) (uintptr_t),
                uintptr_t arg)
     {
-    if (unlikely (task == NULL))
-        {
-        errno = ERRNO_TASK_ILLEGAL_TCB;
-        return -1;
-        }
+    WARN_ON (task == NULL,
+             errno = ERRNO_TASK_ILLEGAL_TCB;   return -1,
+             "Invalid task id");
 
-    if (unlikely (stack == NULL))
-        {
-        errno = ERRNO_TASK_ILLEGAL_STACK;
-        return -1;
-        }
+    WARN_ON (stack == NULL,
+             errno = ERRNO_TASK_ILLEGAL_STACK; return -1,
+             "Invalid stack!");
 
-    if (!aligned_at (stack, STACK_ALIGN) || !aligned_at (stack_size, STACK_ALIGN))
-        {
-        errno = ERRNO_TASK_ILLEGAL_STACK;
-        return -1;
-        }
+    WARN_ON (!aligned_at (stack, STACK_ALIGN) || !aligned_at (stack_size, STACK_ALIGN),
+             errno = ERRNO_TASK_ILLEGAL_STACK; return -1,
+             "Invalid stack!");
 
     return obj_init (task_class, &task->obj, stack, name, prio,
                      options | TASK_OPTION_STATIC_TCB | TASK_OPTION_STATIC_STACK,
@@ -462,17 +451,13 @@ static void __task_delete_clean (struct deferred_job * job)
 
 static inline int __verify_context (task_id task)
     {
-    if (unlikely (!__task_lib_inited ()))
-        {
-        errno = ERRNO_TASK_ILLEGAL_OPERATION;
-        return -1;
-        }
+    WARN_ON (!__task_lib_inited (),
+             errno = ERRNO_TASK_ILLEGAL_OPERATION; return -1,
+             "Task lib not initialized!");
 
-    if (unlikely (task == NULL))
-        {
-        errno = ERRNO_TASK_ILLEGAL_TCB;
-        return -1;
-        }
+    WARN_ON (task == NULL,
+             errno = ERRNO_TASK_ILLEGAL_TCB; return -1,
+             "Invalid task id");
 
     return 0;
     }
@@ -491,11 +476,9 @@ int task_delete (task_id task)
         return -1;
         }
 
-    if (unlikely (task->option & TASK_OPTION_SYSTEM))
-        {
-        errno = ERRNO_TASK_ILLEGAL_OPERATION;
-        return -1;
-        }
+    WARN_ON ((task->option & TASK_OPTION_SYSTEM) != 0,
+             errno = ERRNO_TASK_ILLEGAL_OPERATION; return -1,
+             "Can not delete system task!");
 
     if (task != current)
         {
@@ -548,6 +531,8 @@ int task_delete (task_id task)
 int __noreturn task_exit (void)
     {
     task_delete (current);
+
+    BUG ("We should never be here!");
 
     while (1)
         {
@@ -662,11 +647,9 @@ int task_suspend (task_id task)
         return -1;
         }
 
-    if (unlikely (task->option & TASK_OPTION_NO_BLOCK))
-        {
-        errno = ERRNO_TASK_ILLEGAL_OPERATION;
-        return -1;
-        }
+    WARN_ON (task->option & TASK_OPTION_NO_BLOCK,
+             errno = ERRNO_TASK_ILLEGAL_OPERATION; return -1,
+             "Trying to suspend noblock task, task name: \"%s\"!", task->name);
 
     return do_critical (__task_suspend, (uintptr_t) task, 0);
     }
@@ -764,6 +747,7 @@ static int __task_prio_set (uintptr_t arg1, uintptr_t arg2)
 
     if (task->wanted.id != NULL && task->wanted.id->class->mid == MID_MUTEX)
         {
+        errno = ERRNO_TASK_ILLEGAL_OPERATION;
         return -1;
         }
 
@@ -815,17 +799,13 @@ static int __task_prio_set (uintptr_t arg1, uintptr_t arg2)
 
 int task_prio_set (task_id task, uint8_t prio)
     {
-    if (unlikely (task == NULL))
-        {
-        errno = ERRNO_TASK_ILLEGAL_TCB;
-        return -1;
-        }
+    WARN_ON (task == NULL,
+             errno = ERRNO_TASK_ILLEGAL_TCB;  return -1,
+             "Invalid task id");
 
-    if (unlikely (prio > TASK_PRIO_MAX))
-        {
-        errno = ERRNO_TASK_ILLEGAL_PRIO;
-        return -1;
-        }
+    WARN_ON (prio > TASK_PRIO_MAX,
+             errno = ERRNO_TASK_ILLEGAL_PRIO; return -1,
+             "Invalid priority!");
 
     return do_critical (__task_prio_set, (uintptr_t) task, (uintptr_t) prio);
     }
@@ -888,11 +868,9 @@ static int __task_delay (uintptr_t arg1, uintptr_t arg2)
 
 int task_delay (unsigned int ticks)
     {
-    if (unlikely (current == NULL))
-        {
-        errno = ERRNO_TASK_ILLEGAL_OPERATION;
-        return -1;
-        }
+    WARN_ON (current == NULL,
+             errno = ERRNO_TASK_ILLEGAL_OPERATION; return -1,
+             "Invalid task id!");
 
     return do_critical_might_sleep (__task_delay, (uintptr_t) ticks, 0);
     }
@@ -980,12 +958,6 @@ static inline void __ready_q_put (struct task * task, bool head)
         return;
         }
 
-    if (unlikely (task == defer))
-        {
-        ready_q.highest = task;
-        return;
-        }
-
     if ((ready_q.highest == idle) || (prio < ready_q.highest->c_prio))
         {
         ready_q.highest = task;
@@ -1044,21 +1016,16 @@ void task_ready_q_ins (struct task * task)
 
 void task_ready_q_del (struct task * task)
     {
-    int idx;
+    int     idx;
+    uint8_t prio = task->c_prio;
 
-    if (unlikely (!in_critical ()))
+    BUG_ON (!in_critical (), "Invalid operation1");
+
+    dlist_del (&task->rq_node);
+
+    if (dlist_empty (&ready_q.heads [prio]))
         {
-        return;
-        }
-
-    if (likely (task != defer))
-        {
-        dlist_del (&task->rq_node);
-
-        if (dlist_empty (&ready_q.heads [task->c_prio]))
-            {
-            ready_q.bmap &= ~(((__prio_bmap_t) 1) << (TASK_PRIO_MAX - task->c_prio));
-            }
+        ready_q.bmap &= ~(((__prio_bmap_t) 1) << (TASK_PRIO_MAX - task->c_prio));
         }
 
     if (ready_q.highest != task)
@@ -1110,10 +1077,7 @@ static inline void __task_q_xwait_timed (unsigned int timeout,
 void task_fwait_q_add (dlist_t * q, unsigned int timeout,
                        void (* callback) (task_id task))
     {
-    if (unlikely (!in_critical ()))
-        {
-        return;
-        }
+    BUG_ON (!in_critical (), "Invalid operation1");
 
     dlist_add_tail (q, &current->pq_node);
 
@@ -1155,10 +1119,7 @@ static void __pwait_q_add (dlist_t * q, task_id task)
 void task_pwait_q_add (dlist_t * q, unsigned int timeout,
                        void (* callback) (task_id task))
     {
-    if (unlikely (!in_critical ()))
-        {
-        return;
-        }
+    BUG_ON (!in_critical (), "Invalid operation1");
 
     __pwait_q_add (q, current);
 
@@ -1176,12 +1137,10 @@ void task_pwait_q_add (dlist_t * q, unsigned int timeout,
 
 void task_pwait_q_adj (dlist_t * q, task_id task)
     {
-    if (unlikely (!in_critical ()))
-        {
-        return;
-        }
+    BUG_ON (!in_critical (), "Invalid operation1");
 
     dlist_del (&task->pq_node);
+
     __pwait_q_add (q, task);
     }
 
@@ -1228,17 +1187,13 @@ int task_tls_slot_alloc (void)
 
 int task_tls_set (task_id task, int slot, uintptr_t value)
     {
-    if (task == NULL)
-        {
-        errno = ERRNO_TASK_ILLEGAL_TCB;
-        return -1;
-        }
+    WARN_ON (task == NULL,
+             errno = ERRNO_TASK_ILLEGAL_TCB;  return -1,
+             "Invalid task id");
 
-    if (slot < 0 || slot >= CONFIG_NR_TLS_SLOTS)
-        {
-        errno = ERRNO_TASK_ILLEGAL_TLS_INDEX;
-        return -1;
-        }
+    WARN_ON (slot < 0 || slot >= CONFIG_NR_TLS_SLOTS,
+             errno = ERRNO_TASK_ILLEGAL_TLS_INDEX; return -1,
+             "Invalid slot!");
 
     task->tls [slot] = value;
 
@@ -1256,17 +1211,13 @@ int task_tls_set (task_id task, int slot, uintptr_t value)
 
 int task_tls_get (task_id task, int slot, uintptr_t * value)
     {
-    if (task == NULL)
-        {
-        errno = ERRNO_TASK_ILLEGAL_TCB;
-        return -1;
-        }
+    WARN_ON (task == NULL,
+             errno = ERRNO_TASK_ILLEGAL_TCB;  return -1,
+             "Invalid task id");
 
-    if (slot < 0 || slot >= CONFIG_NR_TLS_SLOTS)
-        {
-        errno = ERRNO_TASK_ILLEGAL_TLS_INDEX;
-        return -1;
-        }
+    WARN_ON (slot < 0 || slot >= CONFIG_NR_TLS_SLOTS,
+             errno = ERRNO_TASK_ILLEGAL_TLS_INDEX; return -1,
+             "Invalid slot!");
 
     *value = task->tls [slot];
 
@@ -1295,11 +1246,15 @@ static int __task_init (obj_id obj, va_list valist)
     entry      = va_arg (valist, int (*) (uintptr_t));
     arg        = va_arg (valist, uintptr_t);
 
-    if (unlikely (prio > TASK_PRIO_MAX))
-        {
-        errno = ERRNO_TASK_ILLEGAL_PRIO;
-        return -1;
-        }
+    WARN_ON (unlikely (prio > TASK_PRIO_MAX),
+             errno = ERRNO_TASK_ILLEGAL_PRIO; return -1,
+             "Invalid priority!");
+
+    /* priority 0 is reserved for the deferred task */
+
+    WARN_ON (prio == 0 && current != NULL && strcmp (name, CONFIG_DEFERRED_NAME) != 0,
+             errno = ERRNO_TASK_ILLEGAL_PRIO; return -1,
+             "Priority 0 is reserved for deferred task!");
 
     memset (stack, 0xee, stack_size);
 
@@ -1393,22 +1348,18 @@ static int __task_destroy (obj_id obj)
 
 static int task_lib_init (void)
     {
-    int ret;
+    BUG_ON (class_init (task_class, MID_TASK, sizeof (task_t),
+                        __task_init, __task_destroy, NULL, NULL),
+            "fail to initialize task_class!");
 
-    ret = class_init (task_class, MID_TASK, sizeof (task_t),
-                      __task_init, __task_destroy, NULL, NULL);
-
-    BUG_ON (ret != 0);
-
-    ret = task_init  (idle, (char *) __idle_stack, "idle", 0,
-                      TASK_OPTION_NO_BLOCK | TASK_OPTION_SYSTEM, MIN_STACK_SIZE,
-                      idle_entry, 0);
-
-    BUG_ON (ret != 0);
+    BUG_ON (task_init (idle, (char *) __idle_stack, "idle", 0,
+                       TASK_OPTION_NO_BLOCK | TASK_OPTION_SYSTEM, MIN_STACK_SIZE,
+                       idle_entry, 0),
+            "fail to initialize idle task!");
 
     __ready_q_init ();
 
-    BUG_ON (task_resume (idle) != 0);
+    BUG_ON (task_resume (idle) != 0, "fail to resume idle task!");
 
     return 0;
     }

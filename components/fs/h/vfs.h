@@ -140,4 +140,4 @@ extern int               vfs_fs_unregister (struct file_system *);
 }
 #endif /* __cplusplus */
 
-#endif  /* __VFS_H__ */
+#endif /* __VFS_H__ */

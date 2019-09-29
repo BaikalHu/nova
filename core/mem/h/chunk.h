@@ -221,5 +221,5 @@ static __always_inline void __set_ach_to_mem (char * mem, chunk_t * chunk)
 }
 #endif /* __cplusplus */
 
-#endif  /* __CHUNK_H__ */
+#endif /* __CHUNK_H__ */
 

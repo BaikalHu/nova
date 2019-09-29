@@ -26,8 +26,9 @@
 #include <mutex.h>
 #include <list.h>
 #include <init.h>
-#include <vfs.h>
+#include <warn.h>
 #include <bug.h>
+#include <vfs.h>
 
 #ifdef CONFIG_CMDER
 #include <stdio.h>
@@ -1441,29 +1442,20 @@ int vfs_fs_register (struct file_system * fs)
     {
     int ret;
 
-    if (fs          == NULL ||
-        fs->fs_name == NULL ||
-        fs->fs_fops == NULL ||
-        fs->fs_mops == NULL)
-        {
-        return -1;
-        }
-
-    if (fs->fs_fops->open  == NULL ||
-        fs->fs_fops->read  == NULL ||
-        fs->fs_fops->write == NULL ||
-        fs->fs_mops->stat  == NULL ||
-        fs->fs_mops->mount == NULL)
-        {
-        return -1;
-        }
+    BUG_ON (fs                 == NULL ||
+            fs->fs_name        == NULL ||
+            fs->fs_fops        == NULL ||
+            fs->fs_fops->open  == NULL ||
+            fs->fs_fops->read  == NULL ||
+            fs->fs_fops->write == NULL ||
+            fs->fs_mops        == NULL ||
+            fs->fs_mops->stat  == NULL ||
+            fs->fs_mops->mount == NULL,
+            "Invalid filesystem!");
 
     /* check fs name */
 
-    if (!__is_fs_name_valid (fs->fs_name))
-        {
-        return -1;
-        }
+    BUG_ON (!__is_fs_name_valid (fs->fs_name), "Invalid filesystem name!");
 
     fs->fs_refs = 0;
 
@@ -1503,6 +1495,7 @@ int vfs_fs_unregister (struct file_system * fs)
 
     if (fs->fs_refs != 0)
         {
+        WARN ("Filesystem is busy!");
         errno = EBUSY;
         ret = -1;
         }
@@ -1525,13 +1518,7 @@ int vfs_fs_unregister (struct file_system * fs)
 
 static int vfs_init (void)
     {
-    if (mutex_init (&fs_lock) != 0)
-        {
-        WARN ("fail to initialize fs_lock!");
-        return -1;
-        }
-
-    return 0;
+    return mutex_init (&fs_lock);
     }
 
 MODULE_INIT (kernel, vfs_init);

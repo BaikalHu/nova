@@ -22,6 +22,8 @@
 #include <mutex.h>
 #include <errno.h>
 #include <bug.h>
+#include <warn.h>
+#include <init.h>
 
 #ifdef CONFIG_DEVFS
 #include <devfs.h>
@@ -29,8 +31,8 @@
 
 /* locals */
 
-static dlist_t hal_uarts = DLIST_INIT (hal_uarts);
-static mutex_t hal_uarts_lock;
+static dlist_t __uarts = DLIST_INIT (__uarts);
+static mutex_t __uarts_lock;
 
 /**
  * hal_uart_open - open a uart by name
@@ -44,22 +46,28 @@ hal_uart_t * hal_uart_open (const char * name)
     dlist_t    * itr;
     hal_uart_t * uart;
 
-    mutex_lock (&hal_uarts_lock);
+    WARN_ON (name == NULL,
+             errno = ERRNO_HAL_UART_ILLEGAL_NAME; return NULL,
+             "Invalid name!");
 
-    dlist_foreach (itr, &hal_uarts)
+    mutex_lock (&__uarts_lock);
+
+    dlist_foreach (itr, &__uarts)
         {
         uart = container_of (itr, hal_uart_t, node);
 
         if (strcmp (name, uart->name) == 0)
             {
-            mutex_unlock (&hal_uarts_lock);
+            mutex_unlock (&__uarts_lock);
             return uart;
             }
         }
 
-    mutex_unlock (&hal_uarts_lock);
+    mutex_unlock (&__uarts_lock);
 
     errno = ERRNO_HAL_UART_NO_MATCH;
+
+    WARN ("Fail to open device \"%s\"!", name);
 
     return NULL;
     }
@@ -77,23 +85,17 @@ size_t hal_uart_poll_read (hal_uart_t * uart, unsigned char * buff, size_t len)
     {
     size_t i;
 
-    if (unlikely (uart == NULL))
-        {
-        errno = ERRNO_HAL_UART_ILLEGAL_ID;
-        return 0;
-        }
+    WARN_ON (uart == NULL,
+             errno = ERRNO_HAL_UART_ILLEGAL_ID; return 0,
+             "Invalid uart device!");
 
-    if (unlikely (buff == NULL))
-        {
-        errno = ERRNO_HAL_UART_ILLEGAL_BUFF;
-        return 0;
-        }
+    WARN_ON (buff == NULL,
+             errno = ERRNO_HAL_UART_ILLEGAL_BUFF; return 0,
+             "Invalid buffer!");
 
-    if (unlikely (uart->methods->poll_getc == NULL))
-        {
-        errno = ERRNO_HAL_UART_ILLEGAL_OPERATION;
-        return 0;
-        }
+    WARN_ON (uart->methods->poll_getc == NULL,
+             errno = ERRNO_HAL_UART_ILLEGAL_OPERATION; return 0,
+             "POLL mode get not supported!");
 
     for (i = 0; i < len; i++)
         {
@@ -145,11 +147,9 @@ int hal_uart_getc (hal_uart_t * uart)
     unsigned char ch;
     size_t        got;
 
-    if (unlikely (uart == NULL))
-        {
-        errno = ERRNO_HAL_UART_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (uart == NULL,
+             errno = ERRNO_HAL_UART_ILLEGAL_ID; return -1,
+             "Invalid uart device!");
 
     if (uart->mode == HAL_UART_MODE_POLL)
         {
@@ -172,11 +172,9 @@ int hal_uart_getc (hal_uart_t * uart)
 
 int hal_uart_poll_getc (hal_uart_t * uart)
     {
-    if (unlikely (uart == NULL))
-        {
-        errno = ERRNO_HAL_UART_ILLEGAL_ID;
-        return 0;
-        }
+    WARN_ON (uart == NULL,
+             errno = ERRNO_HAL_UART_ILLEGAL_ID; return 0,
+             "Invalid uart device!");
 
     if (unlikely (uart->methods->poll_putc == NULL))
         {
@@ -200,17 +198,13 @@ size_t hal_uart_read (hal_uart_t * uart, unsigned char * buff, size_t len)
     {
     size_t i;
 
-    if (unlikely (uart == NULL))
-        {
-        errno = ERRNO_HAL_UART_ILLEGAL_ID;
-        return 0;
-        }
+    WARN_ON (uart == NULL,
+             errno = ERRNO_HAL_UART_ILLEGAL_ID; return 0,
+             "Invalid uart device!");
 
-    if (unlikely (buff == NULL))
-        {
-        errno = ERRNO_HAL_UART_ILLEGAL_BUFF;
-        return 0;
-        }
+    WARN_ON (buff == NULL,
+             errno = ERRNO_HAL_UART_ILLEGAL_BUFF; return 0,
+             "Invalid buffer!");
 
     if (uart->mode == HAL_UART_MODE_POLL)
         {
@@ -243,23 +237,17 @@ size_t hal_uart_poll_write (hal_uart_t * uart, const unsigned char * buff, size_
     {
     size_t i;
 
-    if (unlikely (uart == NULL))
-        {
-        errno = ERRNO_HAL_UART_ILLEGAL_ID;
-        return 0;
-        }
+    WARN_ON (uart == NULL,
+             errno = ERRNO_HAL_UART_ILLEGAL_ID; return 0,
+             "Invalid uart device!");
 
-    if (unlikely (buff == NULL))
-        {
-        errno = ERRNO_HAL_UART_ILLEGAL_BUFF;
-        return 0;
-        }
+    WARN_ON (buff == NULL,
+             errno = ERRNO_HAL_UART_ILLEGAL_BUFF; return 0,
+             "Invalid buffer!");
 
-    if (unlikely (uart->methods->poll_putc == NULL))
-        {
-        errno = ERRNO_HAL_UART_ILLEGAL_OPERATION;
-        return 0;
-        }
+    WARN_ON (uart->methods->poll_putc == NULL,
+             errno = ERRNO_HAL_UART_ILLEGAL_OPERATION; return 0,
+             "POLL mode put not supported!");
 
     for (i = 0; i < len; i++)
         {
@@ -313,11 +301,9 @@ static inline size_t __uart_putc (hal_uart_t * uart, unsigned char ch,
 
 size_t hal_uart_putc (hal_uart_t * uart, const unsigned char ch)
     {
-    if (unlikely (uart == NULL))
-        {
-        errno = ERRNO_HAL_UART_ILLEGAL_ID;
-        return 0;
-        }
+    WARN_ON (uart == NULL,
+             errno = ERRNO_HAL_UART_ILLEGAL_ID; return 0,
+             "Invalid uart device!");
 
     if (uart->mode == HAL_UART_MODE_POLL)
         {
@@ -337,17 +323,13 @@ size_t hal_uart_putc (hal_uart_t * uart, const unsigned char ch)
 
 size_t hal_uart_poll_putc (hal_uart_t * uart, const unsigned char ch)
     {
-    if (unlikely (uart == NULL))
-        {
-        errno = ERRNO_HAL_UART_ILLEGAL_ID;
-        return 0;
-        }
+    WARN_ON (uart == NULL,
+             errno = ERRNO_HAL_UART_ILLEGAL_ID; return 0,
+             "Invalid uart device!");
 
-    if (unlikely (uart->methods->poll_putc == NULL))
-        {
-        errno = ERRNO_HAL_UART_ILLEGAL_OPERATION;
-        return 0;
-        }
+    WARN_ON (uart->methods->poll_putc == NULL,
+             errno = ERRNO_HAL_UART_ILLEGAL_OPERATION; return 0,
+             "POLL mode put not supported!");
 
     return uart->methods->poll_putc (uart, ch);
     }
@@ -365,17 +347,13 @@ size_t hal_uart_write (hal_uart_t * uart, const unsigned char * buff, size_t len
     {
     size_t i;
 
-    if (unlikely (uart == NULL))
-        {
-        errno = ERRNO_HAL_UART_ILLEGAL_ID;
-        return 0;
-        }
+    WARN_ON (uart == NULL,
+             errno = ERRNO_HAL_UART_ILLEGAL_ID; return 0,
+             "Invalid uart device!");
 
-    if (unlikely (buff == NULL))
-        {
-        errno = ERRNO_HAL_UART_ILLEGAL_BUFF;
-        return 0;
-        }
+    WARN_ON (buff == NULL,
+             errno = ERRNO_HAL_UART_ILLEGAL_BUFF; return 0,
+             "Invalid buffer!");
 
     if (uart->mode == HAL_UART_MODE_POLL)
         {
@@ -405,12 +383,16 @@ size_t hal_uart_write (hal_uart_t * uart, const unsigned char * buff, size_t len
 
 void hal_rx_putc (hal_uart_t * uart, unsigned char ch)
     {
-    struct ring * ring = uart->rxring;
+    struct ring * ring;
     bool          full;
+
+    BUG_ON (uart == NULL, "Invalid uart device!");
 
     /* uart ISR must be handled in task context */
 
-    BUG_ON (int_context ());
+    BUG_ON (int_context (), "RX should always in task context!");
+
+    ring = uart->rxring;
 
     mutex_lock (&uart->rxmux);
 
@@ -437,11 +419,15 @@ void hal_rx_putc (hal_uart_t * uart, unsigned char ch)
 size_t hal_tx_getc (hal_uart_t * uart, unsigned char * ch)
     {
     size_t        ret;
-    struct ring * ring = uart->txring;
+    struct ring * ring;
+
+    BUG_ON (uart == NULL, "Invalid uart device!");
 
     /* uart ISR must be handled in task context */
 
-    BUG_ON (int_context ());
+    BUG_ON (int_context (), "TX should always in task context!");
+
+    ring = uart->txring;
 
     mutex_lock (&uart->txmux);
 
@@ -504,109 +490,99 @@ static const struct devfs_ops __uart_ops =
 int hal_uart_register (hal_uart_t * uart, const char * name,
                        const struct hal_uart_methods * methods, uint8_t mode)
     {
-    static bool inited = false;
-
-    /* invoked at pre-kernel, needless protect */
-
-    if (unlikely (!inited))
-        {
-        if (mutex_init (&hal_uarts_lock) != 0)
-            {
-            return -1;
-            }
-
-        inited = true;
-        }
-
-    if (unlikely (uart == NULL))
-        {
-        errno = ERRNO_HAL_UART_ILLEGAL_ID;
-        return -1;
-        }
-
-    if (unlikely (name == NULL || methods == NULL))
-        {
-        errno = ERRNO_HAL_UART_ILLEGAL_CONFIG;
-        return -1;
-        }
+    BUG_ON (uart    == NULL, "Invalid uart device!");
+    BUG_ON (name    == NULL, "Invalid uart device name!");
+    BUG_ON (methods == NULL, "Invalid uart device methods!");
 
     switch (mode)
         {
         case HAL_UART_MODE_INT:
-            if (uart->methods->tx_start == NULL)
-                {
-                errno = ERRNO_HAL_UART_ILLEGAL_CONFIG;
-                return -1;
-                }
+            BUG_ON (uart->methods->tx_start == NULL, "Invalid uart device methods");
 
             break;
         case HAL_UART_MODE_POLL:
-            if ((uart->methods->poll_putc == NULL) ||
-                (uart->methods->poll_getc == NULL))
-                {
-                errno = ERRNO_HAL_UART_ILLEGAL_CONFIG;
-                return -1;
-                }
+            BUG_ON ((uart->methods->poll_putc == NULL) || (uart->methods->poll_getc == NULL),
+                    "Invalid uart device methods");
 
             break;
         default:
-            errno = ERRNO_HAL_UART_ILLEGAL_CONFIG;
-            return -1;
+            BUG ("Invalid uart device methods");
+            break;
         }
 
     uart->name    = name;
     uart->mode    = mode;
     uart->methods = methods;
 
-    if (sem_init (&uart->rxsem, 0))
+    if (unlikely (sem_init (&uart->rxsem, 0) != 0))
         {
-        return -1;
+        goto err_out;
         }
 
-    if (sem_init (&uart->txsem, HAL_UART_RING_SIZE))
+    if (unlikely (sem_init (&uart->txsem, HAL_UART_RING_SIZE) != 0))
         {
-        return -1;
+        goto err_out_destroy_rxsem;
         }
 
-    if (mutex_init (&uart->rxmux))
+    if (unlikely (mutex_init (&uart->rxmux) != 0))
         {
-        return -1;
+        goto err_out_destroy_txsem;
         }
 
-    if (mutex_init (&uart->txmux))
+    if (unlikely (mutex_init (&uart->txmux) != 0))
         {
-        return -1;
+        goto err_out_destroy_rxmux;
         }
 
     uart->rxring = ring_create (HAL_UART_RING_SIZE);
 
-    if (uart->rxring == NULL)
+    if (unlikely (uart->rxring == NULL))
         {
-        return -1;
+        goto err_out_destroy_txmux;
         }
 
     uart->txring = ring_create (HAL_UART_RING_SIZE);
 
-    if (uart->txring == NULL)
+    if (unlikely (uart->txring == NULL))
         {
-        ring_destroy (uart->rxring);
-
-        return -1;
+        goto err_out_destroy_rxring;
         }
 
-    if (mutex_lock (&hal_uarts_lock) != 0)
+    if (unlikely (mutex_lock (&__uarts_lock) != 0))
         {
-        return -1;
+        goto err_out_destroy_txring;
         }
 
-    dlist_add_tail (&hal_uarts, &uart->node);
+    dlist_add_tail (&__uarts, &uart->node);
 
-    mutex_unlock (&hal_uarts_lock);
+    mutex_unlock (&__uarts_lock);
 
 #ifdef CONFIG_DEVFS
     return devfs_add_file (name, &__uart_ops, (uintptr_t) uart);
 #else
     return 0;
 #endif
+
+err_out_destroy_txring:
+    ring_destroy (uart->txring);
+err_out_destroy_rxring:
+    ring_destroy (uart->rxring);
+err_out_destroy_txmux:
+    mutex_destroy (&uart->txmux);
+err_out_destroy_rxmux:
+    mutex_destroy (&uart->rxmux);
+err_out_destroy_txsem:
+    sem_destroy (&uart->txsem);
+err_out_destroy_rxsem:
+    sem_destroy (&uart->rxsem);
+err_out:
+    return -1;
     }
+
+static int hal_uart_init (void)
+    {
+    return mutex_init (&__uarts_lock);
+    }
+
+MODULE_INIT (bus, hal_uart_init);
 

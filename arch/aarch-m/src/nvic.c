@@ -83,7 +83,7 @@ static int nvic_init (void)
         .setprio = nvic_setprio
         };
 
-    BUG_ON (hal_int_register (&nvic_methods) != 0);
+    BUG_ON (hal_int_register (&nvic_methods) != 0, "Fail to register NVIC!");
 
     return 0;
     }

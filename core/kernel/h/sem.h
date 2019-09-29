@@ -61,5 +61,5 @@ extern unsigned int sem_getvalue  (sem_t *);
 }
 #endif /* __cplusplus */
 
-#endif  /* __SEM_H__ */
+#endif /* __SEM_H__ */
 

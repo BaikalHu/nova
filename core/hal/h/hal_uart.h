@@ -38,11 +38,11 @@ extern "C" {
 #define HAL_UART_MODE_POLL                  (1 << 0)
 #define HAL_UART_MODE_INT                   (1 << 1)
 
-#define ERRNO_HAL_UART_NO_MATCH             ERRNO_JOIN (MID_HAL, 0x21)
-#define ERRNO_HAL_UART_ILLEGAL_ID           ERRNO_JOIN (MID_HAL, 0x22)
-#define ERRNO_HAL_UART_ILLEGAL_BUFF         ERRNO_JOIN (MID_HAL, 0x23)
-#define ERRNO_HAL_UART_ILLEGAL_CONFIG       ERRNO_JOIN (MID_HAL, 0x24)
-#define ERRNO_HAL_UART_ILLEGAL_OPERATION    ERRNO_JOIN (MID_HAL, 0x25)
+#define ERRNO_HAL_UART_ILLEGAL_ID           ERRNO_JOIN (MID_HAL, 0x21)
+#define ERRNO_HAL_UART_ILLEGAL_BUFF         ERRNO_JOIN (MID_HAL, 0x22)
+#define ERRNO_HAL_UART_ILLEGAL_OPERATION    ERRNO_JOIN (MID_HAL, 0x23)
+#define ERRNO_HAL_UART_ILLEGAL_NAME         ERRNO_JOIN (MID_HAL, 0x24)
+#define ERRNO_HAL_UART_NO_MATCH             ERRNO_JOIN (MID_HAL, 0x25)
 
 /* typedefs */
 
@@ -93,5 +93,5 @@ extern int          hal_uart_register   (hal_uart_t *, const char *,
 }
 #endif /* __cplusplus */
 
-#endif  /* __HAL_UART_H__ */
+#endif /* __HAL_UART_H__ */
 

@@ -46,8 +46,8 @@ typedef struct mempool
 
 #define ERRNO_MEMPOOL_ILLEGAL_ID        ERRNO_JOIN (MID_MEMPOOL, 1)
 #define ERRNO_MEMPOOL_ILLEGAL_PARA      ERRNO_JOIN (MID_MEMPOOL, 2)
-#define ERRNO_MEMPOOL_ILLEGAL_POOL      ERRNO_JOIN (MID_MEMPOOL, 3)
-#define ERRNO_MEMPOOL_ILLEGAL_OPERATION ERRNO_JOIN (MID_MEMPOOL, 4)
+#define ERRNO_MEMPOOL_ILLEGAL_OPERATION ERRNO_JOIN (MID_MEMPOOL, 3)
+#define ERRNO_MEMPOOL_BUSY              ERRNO_JOIN (MID_MEMPOOL, 4)
 
 /* externs */
 
@@ -60,4 +60,4 @@ extern int        mempool_free     (mempool_id, char *);
 }
 #endif /* __cplusplus */
 
-#endif  /* __MEMPOOL_H__ */
+#endif /* __MEMPOOL_H__ */

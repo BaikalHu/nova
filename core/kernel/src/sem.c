@@ -26,6 +26,7 @@
 #include <critical.h>
 #include <errno.h>
 #include <init.h>
+#include <warn.h>
 #include <bug.h>
 
 #ifdef CONFIG_SYSCALL
@@ -51,11 +52,9 @@ class_t sem_class [1];
 
 int sem_init (sem_t * sem, unsigned int value)
     {
-    if (unlikely (sem == NULL))
-        {
-        errno = ERRNO_SEM_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (sem == NULL,
+             errno = ERRNO_SEM_ILLEGAL_ID; return -1,
+             "Invalid sem id!");
 
     return obj_init (sem_class, &sem->obj, value);
     }
@@ -116,11 +115,9 @@ sem_id sem_open (const char * name, int oflag, ...)
 
 int sem_destroy (sem_t * sem)
     {
-    if (unlikely (sem == NULL))
-        {
-        errno = ERRNO_SEM_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (sem == NULL,
+             errno = ERRNO_SEM_ILLEGAL_ID; return -1,
+             "Invalid sem id!");
 
     return obj_destroy (sem_class, &sem->obj);
     }
@@ -255,11 +252,9 @@ int __sem_post (uintptr_t arg1, uintptr_t arg2)
 
 int sem_post (sem_t * sem)
     {
-    if (unlikely (sem == NULL))
-        {
-        errno = ERRNO_SEM_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (sem == NULL,
+             errno = ERRNO_SEM_ILLEGAL_ID; return -1,
+             "Invalid sem id!");
 
     return do_critical (__sem_post, (uintptr_t) sem, 0);
     }
@@ -332,11 +327,9 @@ static int __sem_destroy (obj_id obj)
 
 static int sem_lib_init (void)
     {
-    if (class_init (sem_class, MID_SEM, sizeof (sem_t),
-                    __sem_init, __sem_destroy, NULL, NULL) != 0)
-        {
-        BUG ("fail to init sem_class!");
-        }
+    BUG_ON (class_init (sem_class, MID_SEM, sizeof (sem_t),
+                        __sem_init, __sem_destroy, NULL, NULL) != 0,
+            "Fail to init sem_class!");
 
     return 0;
     }

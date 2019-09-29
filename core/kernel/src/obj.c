@@ -24,6 +24,7 @@
 #include <irq.h>
 #include <memtry.h>
 #include <task.h>
+#include <warn.h>
 #include <critical.h>
 
 /* macros */
@@ -86,21 +87,25 @@ int obj_verify (class_id class, obj_id obj)
     if (unlikely (mem_try ((void *) &magic, (void *) &obj->magic, order)) != 0)
         {
         errno = ERRNO_OBJ_ILLEGAL_ID;
+        WARN ("Object can not be accessed!");
         return -1;
         }
 
     if (unlikely (magic != (uintptr_t) obj))
         {
         errno = ERRNO_OBJ_ILLEGAL_MAGIC;
+        WARN ("Object not valid!");
         return -1;
         }
 
     if (unlikely (obj->class != class))
         {
         errno = ERRNO_OBJ_ILLEGAL_CLASS;
+        WARN ("Object not valid!");
         return -1;
         }
 #endif
+
     return 0;
     }
 
@@ -252,7 +257,13 @@ obj_id obj_create (class_id class, ...)
 
 obj_id obj_open (class_id class, const char * name, int oflag, va_list valist)
     {
-    obj_id obj = obj_find (class, name);
+    obj_id obj;
+
+    WARN_ON (name == NULL,
+             return NULL,
+             "Invalid name!");
+
+    obj = obj_find (class, name);
 
     if (obj != NULL)
         {
@@ -270,6 +281,8 @@ obj_id obj_open (class_id class, const char * name, int oflag, va_list valist)
 
         return obj;
         }
+
+    /* if object not exist, try to create it */
 
     if ((oflag & O_CREAT) == 0)
         {

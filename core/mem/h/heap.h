@@ -48,7 +48,8 @@ extern "C" {
 #define ERRNO_HEAP_ILLEGAL_ID           ERRNO_JOIN (MID_HEAP, 1)
 #define ERRNO_HEAP_ILLEGAL_BLOCK        ERRNO_JOIN (MID_HEAP, 2)
 #define ERRNO_HEAP_ILLEGAL_ALIGN        ERRNO_JOIN (MID_HEAP, 3)
-#define ERRNO_HEAP_NOT_ENOUGH_MEMORY    ERRNO_JOIN (MID_HEAP, 4)
+#define ERRNO_HEAP_ILLEGAL_STAT         ERRNO_JOIN (MID_HEAP, 4)
+#define ERRNO_HEAP_NOT_ENOUGH_MEMORY    ERRNO_JOIN (MID_HEAP, 5)
 
 /* typedefs */
 
@@ -141,5 +142,5 @@ extern int     heap_stat_get    (heap_t *, mem_stat_t *);
 }
 #endif /* __cplusplus */
 
-#endif  /* __HEAP_H__ */
+#endif /* __HEAP_H__ */
 

@@ -220,5 +220,5 @@ static inline void __regset_set_user (struct regset * regset)
 }
 #endif /* __cplusplus */
 
-#endif  /* __AARCH_M_REGSET_H__ */
+#endif /* __AARCH_M_REGSET_H__ */
 

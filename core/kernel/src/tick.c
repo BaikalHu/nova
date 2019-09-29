@@ -362,10 +362,8 @@ static int __tick_shot_n (uintptr_t arg1, uintptr_t arg2)
 
 static inline void tick_shot_n (unsigned int ticks)
     {
-    if (do_critical (__tick_shot_n, (uintptr_t) ticks, 0) != 0)
-        {
-        BUG ("critical queue full!");
-        }
+    BUG_ON (do_critical (__tick_shot_n, (uintptr_t) ticks, 0) != 0,
+            "critical queue full!");
     }
 
 /**
@@ -666,22 +664,16 @@ static int tick_lib_init (void)
     int      i;
     uint32_t systim_max_count;
 
-    systim = hal_timer_get (CONFIG_TICK_TIMER_NAME);
-
-    if (systim == NULL)
-        {
-        BUG ("fail to get systim!");
-        }
+    BUG_ON ((systim = hal_timer_get (CONFIG_TICK_TIMER_NAME)) == NULL,
+            "Fail to get systim! CONFIG_TICK_TIMER_NAME:%s", CONFIG_TICK_TIMER_NAME);
 
     for (i = 0; i < TICK_Q_LISTS; i++)
         {
         dlist_init (&tick_qs [i]);
         }
 
-    if (hal_timer_feat_get (systim, &systim_max_count, &systim_freq) != 0)
-        {
-        BUG ("fail to get systim feature!");
-        }
+    BUG_ON (hal_timer_feat_get (systim, &systim_max_count, &systim_freq) != 0,
+            "Fail to get systim feature!");
 
 #ifdef CONFIG_TICKLESS
     systim_count_per_tick = systim_freq / CONFIG_SYS_TICK_HZ;
@@ -690,19 +682,11 @@ static int tick_lib_init (void)
 
     /* see the comments for systim_jiff */
 
-    if (systim_jiff < 2)
-        {
-        errno = ERRNO_TICK_HZ_TOO_HIGH;
-        BUG ("CONFIG_SYS_TICK_HZ too high!");
-        }
+    BUG_ON (systim_jiff < 2, "CONFIG_SYS_TICK_HZ too high!");
 
     systim_max_sleep_tick = systim_max_count / systim_count_per_tick;
 
-    if (systim_max_sleep_tick == 0)
-        {
-        errno = ERRNO_TICK_HZ_TOO_LOW;
-        BUG ("CONFIG_SYS_TICK_HZ too low!");
-        }
+    BUG_ON (systim_max_sleep_tick == 0, "CONFIG_SYS_TICK_HZ too low!");
 #endif
 
     task_idle_hook_set (__try_sleep);

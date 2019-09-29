@@ -34,6 +34,10 @@ config DEFERRED_STACK_SIZE
     hex "The stack size of the deferred task."
     default 0x800
 
+config DEFERRED_NAME
+    string "The task name of the deferred task."
+    default "defer"
+
 config SYSCALL
     def_bool n
 

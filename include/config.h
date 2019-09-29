@@ -20,5 +20,5 @@
 
 #include <arch/config.h>
 
-#endif  /* __CONFIG_H__ */
+#endif /* __CONFIG_H__ */
 

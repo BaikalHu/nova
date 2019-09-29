@@ -210,5 +210,5 @@ extern int            task_switch_hook_add (task_switch_pfn);
 }
 #endif /* __cplusplus */
 
-#endif  /* __TASK_H__ */
+#endif /* __TASK_H__ */
 

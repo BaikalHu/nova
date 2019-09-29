@@ -37,7 +37,7 @@ extern "C" {
 #define ERRNO_HAL_TIMER_ILLEGAL_ID          ERRNO_JOIN (MID_HAL, 0x11)
 #define ERRNO_HAL_TIMER_ILLEGAL_RANGE       ERRNO_JOIN (MID_HAL, 0x12)
 #define ERRNO_HAL_TIMER_ILLEGAL_OPERATION   ERRNO_JOIN (MID_HAL, 0x13)
-#define ERRNO_HAL_TIMER_ILLEGAL_CONFIG      ERRNO_JOIN (MID_HAL, 0x14)
+#define ERRNO_HAL_TIMER_ILLEGAL_NAME        ERRNO_JOIN (MID_HAL, 0x14)
 #define ERRNO_HAL_TIMER_NOT_ENOUGH_TIMER    ERRNO_JOIN (MID_HAL, 0x15)
 
 /* typedefs */
@@ -104,5 +104,5 @@ extern int           hal_timer_feat_get (hal_timer_t * timer,
 }
 #endif /* __cplusplus */
 
-#endif  /* __HAL_TIMER_H__ */
+#endif /* __HAL_TIMER_H__ */
 

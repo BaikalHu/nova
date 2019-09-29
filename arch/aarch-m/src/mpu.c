@@ -22,7 +22,7 @@
 #include <heap.h>
 #include <init.h>
 #include <syscall.h>
-#include <bug.h>
+#include <warn.h>
 
 #include <arch/mpu.h>
 #include <arch/regset.h>
@@ -115,22 +115,21 @@ static inline int __verify_region (uint32_t addr, uint32_t size, uint32_t attr)
 
     /* check size is power of 2 */
 
-    if (unlikely ((size & (size - 1)) != 0))
-        {
-        return -1;
-        }
+    WARN_ON ((size & (size - 1)) != 0,
+             return -1,
+             "MPU region (%08x %08x %08x) invlaid, size not aligned!", addr, size, attr);
 
     /* check addr is aligned at size */
 
-    if (unlikely ((addr & (size - 1)) != 0))
-        {
-        return -1;
-        }
+    WARN_ON ((addr & (size - 1)) != 0,
+             return -1,
+             "MPU region (%08x %08x %08x) invlaid, addr not aligned!", addr, size, attr);
 
-    if (unlikely ((attr & MPU_RASR_USER_RESERVED) != 0))
-        {
-        return -1;
-        }
+    /* check if any reserved bit in attribute */
+
+    WARN_ON ((attr & MPU_RASR_USER_RESERVED) != 0,
+             return -1,
+             "MPU region (%08x %08x %08x) invlaid, attr invalid!", addr, size, attr);
 
     return 0;
     }
@@ -152,10 +151,9 @@ static inline int __verify_regions (struct mpu_region * regions)
 
     /* can not "==", leave one entry for stack */
 
-    if (unlikely (nr_regions >= mpu_regions))
-        {
-        return -1;
-        }
+    WARN_ON (nr_regions >= mpu_regions,
+             return -1,
+             "Too many regions!");
 
     return 0;
     }
@@ -212,17 +210,13 @@ task_id mpu_task_spawn (const char * name, uint8_t prio, uint32_t options,
     struct mpu_entry * mpu_ctx;
     uint32_t           region;
 
-    if (unlikely (!mpu_supported))
-        {
-        errno = ERRNO_MPU_ILLEGAL_OPERATION;
-        return NULL;
-        }
+    WARN_ON (!mpu_supported,
+             errno = ERRNO_MPU_ILLEGAL_OPERATION; return NULL,
+             "MPU not supported!");
 
-    if (unlikely (regions == NULL))
-        {
-        errno = ERRNO_MPU_ILLEGAL_REGIONS;
-        return NULL;
-        }
+    WARN_ON (regions == NULL,
+             errno = ERRNO_MPU_ILLEGAL_REGIONS; return NULL,
+             "Invalid MPU regions!");
 
     if (unlikely (__verify_regions (regions)))
         {
@@ -334,11 +328,9 @@ int mpu_region_add (task_id task, uint32_t addr, uint32_t size, uint32_t attr)
         return -1;
         }
 
-    if (unlikely (mpu_ctx == NULL))
-        {
-        errno = ERRNO_MPU_ILLEGAL_OPERATION;
-        return -1;
-        }
+    WARN_ON (mpu_ctx == NULL,
+             errno = ERRNO_MPU_ILLEGAL_OPERATION; return -1,
+             "MPU context invalid!");
 
     if (unlikely (__verify_region (addr, size, attr) != 0))
         {
@@ -367,6 +359,8 @@ int mpu_region_add (task_id task, uint32_t addr, uint32_t size, uint32_t attr)
         return 0;
         }
 
+    WARN ("No more entries!");
+
     return -1;
     }
 
@@ -380,12 +374,9 @@ static int mpu_init (void)
     {
     mpu_regions = (mpu->type & MPU_TYPE_DREGION_MASK) >> MPU_TYPE_DREGION_SHIFT;
 
-    if (mpu_regions == 0)
-        {
-        WARN ("CPU does not support MPU!");
-        errno = ERRNO_MPU_UNAVAILABLE;
-        return -1;
-        }
+    WARN_ON (mpu_regions == 0,
+             errno = ERRNO_MPU_UNAVAILABLE; return -1,
+             "MPU not supported!");
 
     /*
      * the background map region attributes for privileged only:
@@ -411,17 +402,13 @@ static int mpu_init (void)
 
     mpu_tls_slot = task_tls_slot_alloc ();
 
-    if (mpu_tls_slot == -1)
-        {
-        WARN ("fail to allocate TLS slot!");
-        return -1;
-        }
+    WARN_ON (mpu_tls_slot == -1,
+             return -1,
+             "Fail to allocate TLS slot!");
 
-    if (task_switch_hook_add (__mpu_task_switch_hook) == -1)
-        {
-        WARN ("fail to add task switch hook!");
-        return -1;
-        }
+    WARN_ON (task_switch_hook_add (__mpu_task_switch_hook) == -1,
+             return -1,
+             "Fail to add task switch hook!");
 
     mpu_supported = true;
 

@@ -24,7 +24,12 @@ void __bug (const char * info)
     {
     (void) int_lock ();
 
-    kprintf ("fatal error, bug: \"%s\"\n", info);
+    /* if __bug beening invoked directly */
+
+    if (info [0] != '\0')
+        {
+        kprintf ("BUG, \"%s\"\n", info);
+        }
 
     call_trace ();
 

@@ -25,7 +25,7 @@
 #include <errno.h>
 #include <irq.h>
 #include <init.h>
-#include <bug.h>
+#include <warn.h>
 
 #ifdef CONFIG_SYSCALL
 #include <syscall.h>
@@ -107,11 +107,9 @@ mq_id mq_open (const char * name, int oflag, ...)
 
 int mq_delete (mq_id mq)
     {
-    if (unlikely (mq == NULL))
-        {
-        errno = ERRNO_MQ_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (mq == NULL,
+             errno = ERRNO_MQ_ILLEGAL_ID; return -1,
+             "Invalid mq id!");
 
     return obj_destroy (mq_class, &mq->obj);
     }
@@ -122,23 +120,17 @@ static inline int __mq_transfer (mq_id mq, void * buff, size_t size,
     unsigned int idx;
     void       * msg;
 
-    if (unlikely (mq == NULL))
-        {
-        errno = ERRNO_MQ_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (mq   == NULL,
+             errno = ERRNO_MQ_ILLEGAL_ID;   return -1,
+             "Invalid mq id!");
 
-    if (unlikely (buff == NULL))
-        {
-        errno = ERRNO_MQ_ILLEGAL_BUFF;
-        return -1;
-        }
+    WARN_ON (buff == NULL,
+             errno = ERRNO_MQ_ILLEGAL_BUFF; return -1,
+             "Invalid buffer!");
 
-    if (unlikely (size == 0))
-        {
-        errno = ERRNO_MQ_ILLEGAL_SIZE;
-        return -1;
-        }
+    WARN_ON (size == 0,
+             errno = ERRNO_MQ_ILLEGAL_SIZE; return -1,
+             "Invalid size!");
 
     /*
      * can not recieve in interrupt context, if the interrupt is just happen
@@ -147,7 +139,9 @@ static inline int __mq_transfer (mq_id mq, void * buff, size_t size,
 
     if (op == MQ_OP_RD && int_context ())
         {
+        WARN ("Can not recieve from msg_queue in ISR!");
         errno = ERRNO_MQ_ILLEGAL_OPERATION;
+
         return -1;
         }
 
@@ -160,6 +154,9 @@ static inline int __mq_transfer (mq_id mq, void * buff, size_t size,
 
     if (unlikely (sem_timedwait (&mq->sem [op], timeout) != 0))
         {
+
+        /* map semaphore errno to mq errno */
+
         switch (errno)
             {
             case ERRNO_SEM_TIMEOUT:
@@ -173,6 +170,7 @@ static inline int __mq_transfer (mq_id mq, void * buff, size_t size,
             }
 
         obj_unprotect (&mq->obj);
+
         return -1;
         }
 
@@ -294,17 +292,13 @@ static int __mq_init (obj_id obj, va_list valist)
 
     (void) options;     // not used for now
 
-    if (unlikely (msg_size == 0))
-        {
-        errno = ERRNO_MQ_ILLEGAL_SIZE;
-        return -1;
-        }
+    WARN_ON (msg_size == 0,
+             errno = ERRNO_MQ_ILLEGAL_SIZE; return -1,
+             "Invalid msg_size");
 
-    if (unlikely (max_msgs == 0 || max_msgs > (size_t) INT_MAX))
-        {
-        errno = ERRNO_MQ_ILLEGAL_MSGS;
-        return -1;
-        }
+    WARN_ON (max_msgs == 0 || max_msgs > (size_t) INT_MAX,
+             errno = ERRNO_MQ_ILLEGAL_MSGS; return -1,
+             "Invalid max_msgs!");
 
     msg_size = round_up (msg_size, ALLOC_ALIGN);
 

@@ -10,5 +10,5 @@ static bool int_context_arch (void)
     return false;
     }
 
-#endif  /* __HOST_IRQ_H__ */
+#endif /* __HOST_IRQ_H__ */
 

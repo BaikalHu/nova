@@ -56,5 +56,5 @@ static __always_inline size_t stack_size_get (size_t size)
 }
 #endif /* __cplusplus */
 
-#endif  /* __AARCH_M_CONFIG_H__ */
+#endif /* __AARCH_M_CONFIG_H__ */
 

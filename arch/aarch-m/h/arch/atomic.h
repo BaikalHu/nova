@@ -453,5 +453,5 @@ static __always_inline bool atomic_uint_dec_nz (atomic_uint * a)
 }
 #endif /* __cplusplus */
 
-#endif  /* __AARCHM_ATOMIC_H__ */
+#endif /* __AARCHM_ATOMIC_H__ */
 

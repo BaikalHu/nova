@@ -140,5 +140,5 @@ static __always_inline bool atomic_uint_dec_nz (atomic_uint * a)
     return atomic_int_add_ne ((atomic_int *) a, 0, (int) -1);
     }
 
-#endif  /* __HOST_ATOMIC_H__ */
+#endif /* __HOST_ATOMIC_H__ */
 

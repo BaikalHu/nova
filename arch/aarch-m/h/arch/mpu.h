@@ -76,4 +76,4 @@ extern int     mpu_region_add (task_id, uint32_t, uint32_t, uint32_t);
 }
 #endif /* __cplusplus */
 
-#endif  /* __AARCH_M_MPU_H__ */
+#endif /* __AARCH_M_MPU_H__ */

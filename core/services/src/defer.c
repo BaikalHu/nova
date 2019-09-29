@@ -21,23 +21,26 @@
 #include <defer.h>
 #include <irq.h>
 #include <task.h>
-#include <event.h>
+#include <sem.h>
 #include <sync.h>
 #include <init.h>
+#include <warn.h>
 #include <bug.h>
 
 #ifdef CONFIG_PROFILE
 #include <profile.h>
 #endif
 
+/* locals */
+
 static dlist_t          __deferred_jobs = DLIST_INIT (__deferred_jobs);
-static event_t          __deferred_event;
+static sem_t            __deferred_sem;
 
 static uint64_t         __defer_stack [CONFIG_DEFERRED_STACK_SIZE / sizeof (uint64_t)];
 
-/* globals */
+static task_t           __defer [1];
 
-task_t                  defer [1];
+/* globals */
 
 struct deferred_isr_q   deferred_isr_q = {0};
 
@@ -77,11 +80,9 @@ static int deferred_isr_q_put (deferred_job_t * job)
     {
     unsigned int idx = deferred_isr_q_idx ();
 
-    if (unlikely (idx == (unsigned int) -1))
-        {
-        errno = ERRNO_DEFERRED_QUEUE_FULL;
-        return -1;
-        }
+    WARN_ON (idx == (unsigned int) -1,
+             errno = ERRNO_DEFERRED_QUEUE_FULL; return -1,
+             "deferred_isr_q full!");
 
     idx &= DEFERRED_IRQ_JOB_MASK;
 
@@ -120,10 +121,10 @@ static deferred_job_t * deferred_isr_q_get (void)
 
 int do_deferred (deferred_job_t * job)
     {
-    if (unlikely (job == NULL))
-        {
-        return -1;
-        }
+    WARN_ON (job == NULL, errno = ERRNO_DEFERRED_ILLEGAL_JOB; return -1,
+             "Invalid job!");
+
+    /* job already in queue */
 
     if (unlikely (!atomic_uint_set_eq (&job->busy, 0, 1)))
         {
@@ -149,7 +150,7 @@ int do_deferred (deferred_job_t * job)
         task_unlock ();
         }
 
-    return event_send (&__deferred_event, 1);
+    return sem_post (&__deferred_sem);
     }
 
 static __always_inline void __do_deferred (deferred_job_t * job)
@@ -172,8 +173,7 @@ static __noreturn int deferred_task (uintptr_t dummy)
 
     while (1)
         {
-        while (event_recv (&__deferred_event, 0xffffffff,
-                           EVENT_WAIT_ANY | EVENT_WAIT_CLR, NULL) != 0);
+        while (sem_wait (&__deferred_sem) != 0);
 
         while (1)
             {
@@ -212,17 +212,16 @@ static __noreturn int deferred_task (uintptr_t dummy)
 
 static int defer_lib_init (void)
     {
-    int ret;
+    BUG_ON (sem_init (&__deferred_sem, 0) != 0,
+            "Fail to initialize __deferred_sem!");
 
-    BUG_ON (event_init (&__deferred_event) != 0);
+    BUG_ON (task_init (__defer, (char *) __defer_stack, CONFIG_DEFERRED_NAME, 0,
+                       TASK_OPTION_SYSTEM, CONFIG_DEFERRED_STACK_SIZE,
+                       deferred_task, 0) != 0,
+            "Fail to initialize deferred task!");
 
-    ret = task_init  (defer, (char *) __defer_stack, "defer", 0,
-                      TASK_OPTION_SYSTEM, CONFIG_DEFERRED_STACK_SIZE,
-                      deferred_task, 0);
-
-    BUG_ON (ret != 0);
-
-    BUG_ON (task_resume (defer) != 0);
+    BUG_ON (task_resume (__defer) != 0,
+            "Fail to resume deffered task!");
 
     return 0;
     }

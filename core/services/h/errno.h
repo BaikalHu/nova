@@ -158,5 +158,5 @@ extern uint32_t * errno_get     (void);
 }
 #endif /* __cplusplus */
 
-#endif  /* __ERRNO_H__ */
+#endif /* __ERRNO_H__ */
 

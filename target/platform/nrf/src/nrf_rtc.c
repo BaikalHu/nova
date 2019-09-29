@@ -238,17 +238,10 @@ static int __nrf_rtc_init (struct nrf_rtc * nrf_rtc, uintptr_t base, unsigned in
         return -1;
         }
 
-    ret = hal_timer_register (&nrf_rtc->hal_timer);
-
     nrf_rtc->irqn   = irqn;
 	nrf_rtc->regset = regset;
 
-    if (ret != 0)
-        {
-        return ret;
-        }
-
-    return 0;
+    return hal_timer_register (&nrf_rtc->hal_timer);
     }
 
 static int nrf_rtc_init (void)

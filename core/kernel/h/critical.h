@@ -85,5 +85,5 @@ static __always_inline bool in_critical (void)
 }
 #endif /* __cplusplus */
 
-#endif  /* __CRITICAL_H__ */
+#endif /* __CRITICAL_H__ */
 

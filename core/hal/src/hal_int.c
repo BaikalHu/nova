@@ -19,6 +19,8 @@
 #include <compiler.h>
 #include <hal_int.h>
 #include <errno.h>
+#include <warn.h>
+#include <bug.h>
 
 /* globals */
 
@@ -32,9 +34,9 @@ static struct
     {
     hal_int_handler_t handler;
     uintptr_t         arg;
-    } hal_int_vector [CONFIG_NR_IRQS];
+    } __irq_table [CONFIG_NR_IRQS];
 
-static const hal_int_methods_t * hal_int_methods = NULL;
+static const hal_int_methods_t * __intc_methods = NULL;
 
 /**
  * hal_int_dispatch - run interrupt routine for an irq
@@ -45,17 +47,15 @@ static const hal_int_methods_t * hal_int_methods = NULL;
 
 void hal_int_dispatch (unsigned int irq)
     {
-    if (unlikely (irq >= CONFIG_NR_IRQS))
-        {
-        return;
-        }
+    WARN_ON (irq >= CONFIG_NR_IRQS,
+             errno = ERRNO_HAL_INTC_ILLEGAL_IRQN; return,
+             "IRQn too large!");
 
-    if (unlikely (hal_int_vector [irq].handler == NULL))
-        {
-        return;
-        }
+    WARN_ON (__irq_table [irq].handler == NULL,
+             return,
+             "IRQ (%d) not connected!", irq);
 
-    hal_int_vector [irq].handler (hal_int_vector [irq].arg);
+    __irq_table [irq].handler (__irq_table [irq].arg);
     }
 
 /**
@@ -69,20 +69,16 @@ void hal_int_dispatch (unsigned int irq)
 
 int hal_int_connect (unsigned int irq, hal_int_handler_t handler, uintptr_t arg)
     {
-    if (unlikely (irq >= CONFIG_NR_IRQS))
-        {
-        errno = ERRNO_HAL_INTC_ILLEGAL_IRQN;
-        return -1;
-        }
+    WARN_ON (irq >= CONFIG_NR_IRQS,
+             errno = ERRNO_HAL_INTC_ILLEGAL_IRQN; return -1,
+             "IRQn too large!");
 
-    if (unlikely (hal_int_vector [irq].handler != NULL))
-        {
-        errno = ERRNO_HAL_INTC_ILLEGAL_OPERATION;
-        return -1;
-        }
+    WARN_ON (__irq_table [irq].handler != NULL,
+             errno = ERRNO_HAL_INTC_ILLEGAL_OPERATION; return -1,
+             "IRQ (%d) already connected!", irq);
 
-    hal_int_vector [irq].arg     = arg;
-    hal_int_vector [irq].handler = handler;
+    __irq_table [irq].arg     = arg;
+    __irq_table [irq].handler = handler;
 
     return 0;
     }
@@ -96,13 +92,11 @@ int hal_int_connect (unsigned int irq, hal_int_handler_t handler, uintptr_t arg)
 
 int hal_int_disconnect (unsigned int irq)
     {
-    if (unlikely (irq >= CONFIG_NR_IRQS))
-        {
-        errno = ERRNO_HAL_INTC_ILLEGAL_IRQN;
-        return -1;
-        }
+    WARN_ON (irq >= CONFIG_NR_IRQS,
+             errno = ERRNO_HAL_INTC_ILLEGAL_IRQN; return -1,
+             "IRQn too large!");
 
-    hal_int_vector [irq].handler = NULL;
+    __irq_table [irq].handler = NULL;
 
     return 0;
     }
@@ -117,13 +111,13 @@ int hal_int_disconnect (unsigned int irq)
 
 int hal_int_setprio (unsigned int irq, unsigned int prio)
     {
-    if (unlikely (hal_int_methods == NULL || hal_int_methods->setprio == NULL))
-        {
-        errno = ERRNO_HAL_INTC_ILLEGAL_OPERATION;
-        return -1;
-        }
+    BUG_ON (__intc_methods == NULL, "No interrupt controller installed!");
 
-    return hal_int_methods->setprio (irq, prio);
+    WARN_ON (__intc_methods->setprio == NULL,
+             errno = ERRNO_HAL_INTC_ILLEGAL_OPERATION; return -1,
+             "Interrupt controller has no <setprio> method!");
+
+    return __intc_methods->setprio (irq, prio);
     }
 
 /**
@@ -135,15 +129,11 @@ int hal_int_setprio (unsigned int irq, unsigned int prio)
 
 int hal_int_enable (unsigned int irq)
     {
-    if (unlikely (hal_int_methods == NULL || hal_int_methods->enable == NULL))
-        {
-        errno = ERRNO_HAL_INTC_ILLEGAL_OPERATION;
-        return -1;
-        }
+    BUG_ON (__intc_methods == NULL, "No interrupt controller installed!");
 
     // TODO: devfs register
 
-    return hal_int_methods->enable (irq);
+    return __intc_methods->enable (irq);
     }
 
 /**
@@ -155,13 +145,13 @@ int hal_int_enable (unsigned int irq)
 
 int hal_int_disable (unsigned int irq)
     {
-    if (unlikely (hal_int_methods == NULL || hal_int_methods->disable == NULL))
-        {
-        errno = ERRNO_HAL_INTC_ILLEGAL_OPERATION;
-        return -1;
-        }
+    BUG_ON (__intc_methods == NULL, "No interrupt controller installed!");
 
-    return hal_int_methods->disable (irq);
+    WARN_ON (__intc_methods->disable == NULL,
+             errno = ERRNO_HAL_INTC_ILLEGAL_OPERATION; return -1,
+             "Interrupt controller has no <setprio> disable!");
+
+    return __intc_methods->disable (irq);
     }
 
 /**
@@ -173,12 +163,14 @@ int hal_int_disable (unsigned int irq)
 
 void hal_int_handler (void)
     {
-    if (unlikely (hal_int_methods == NULL || hal_int_methods->handler == NULL))
+    BUG_ON (__intc_methods == NULL, "No interrupt controller installed!");
+
+    if (unlikely (__intc_methods->handler == NULL))
         {
         return;
         }
 
-    hal_int_methods->handler ();
+    __intc_methods->handler ();
     }
 
 /**
@@ -190,13 +182,9 @@ void hal_int_handler (void)
 
 int hal_int_register (const hal_int_methods_t * methods)
     {
-    if (unlikely (methods == NULL || methods->enable == NULL))
-        {
-        errno = ERRNO_HAL_INTC_ILLEGAL_OPERATION;
-        return -1;
-        }
+    BUG_ON (methods == NULL || methods->enable == NULL, "Invalid interrupt methods!");
 
-    hal_int_methods = methods;
+    __intc_methods = methods;
 
     // TODO: devfs register
 

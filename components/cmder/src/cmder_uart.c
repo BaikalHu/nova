@@ -20,7 +20,7 @@
 #include <cmder.h>
 #include <init.h>
 #include <task.h>
-#include <bug.h>
+#include <warn.h>
 
 /* locals */
 
@@ -119,9 +119,9 @@ static int uart_cmder_init (void)
     cmder = task_spawn ("cmder", 1, TASK_OPTION_SYSTEM, 0x1000,
                         (int (*) (uintptr_t)) cmder_loop, (uintptr_t) &uart_cmder);
 
-    WARN_ON (cmder == NULL);
+    WARN_ON (cmder == NULL, return -1, "Fail to create cmder task!");
 
-    return cmder == NULL ? -1 : 0;
+    return 0;
     }
 
 MODULE_INIT (user, uart_cmder_init);

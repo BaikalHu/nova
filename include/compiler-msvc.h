@@ -152,5 +152,5 @@ static inline int __ctz_u64 (uint64_t x)
     return 64 - __clz_u64 (~(x) & ((x) - 1));
     }
 
-#endif  /* __COMPILER_MSVC_H__ */
+#endif /* __COMPILER_MSVC_H__ */
 

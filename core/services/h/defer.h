@@ -31,7 +31,8 @@ extern "C" {
 #define DEFERRED_IRQ_JOB_MASK               (DEFERRED_IRQ_JOB_SLOTS - 1)
 
 #define ERRNO_DEFERRED_QUEUE_FULL           ERRNO_JOIN (MID_DEFER, 1)
-#define ERRNO_DEFERRED_ILLEGAL_OPERATION    ERRNO_JOIN (MID_DEFER, 2)
+#define ERRNO_DEFERRED_ILLEGAL_JOB          ERRNO_JOIN (MID_DEFER, 2)
+#define ERRNO_DEFERRED_ILLEGAL_OPERATION    ERRNO_JOIN (MID_DEFER, 3)
 
 /* typedefs */
 
@@ -59,5 +60,5 @@ extern int do_deferred (deferred_job_t *);
 }
 #endif /* __cplusplus */
 
-#endif  /* __DEFER_H__ */
+#endif /* __DEFER_H__ */
 

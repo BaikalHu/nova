@@ -18,5 +18,5 @@
 
 #include <arch/sync.h>
 
-#endif  /* __SYNC_H__ */
+#endif /* __SYNC_H__ */
 

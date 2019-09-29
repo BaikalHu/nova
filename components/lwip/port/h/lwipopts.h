@@ -261,4 +261,4 @@
 #define CHECKSUM_GEN_ICMP               0
 #endif
 
-#endif  /* __LWIPOPTS_H__ */
+#endif /* __LWIPOPTS_H__ */

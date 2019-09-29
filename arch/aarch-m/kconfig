@@ -156,6 +156,12 @@ config IDE_EXT
     default "uvprojx"   if KEIL
     default "emProject" if SESA
 
+config IDE_NAME
+    string
+    depends on !NOIDE
+    default "keil" if KEIL
+    default "sesa" if SESA
+
 menu "KEIL configuation"
 
 config KEIL_DEVICE

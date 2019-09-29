@@ -18,6 +18,8 @@
 #include <common.h>
 #include <errno.h>
 #include <hal_timer.h>
+#include <warn.h>
+#include <bug.h>
 
 /* locals */
 
@@ -34,17 +36,13 @@ static dlist_t hal_timers = DLIST_INIT (hal_timers);
 
 int hal_timer_enable (hal_timer_t * timer, uint8_t mode, unsigned long count)
     {
-    if (unlikely (timer == NULL))
-        {
-        errno = ERRNO_HAL_TIMER_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (timer == NULL,
+             errno = ERRNO_HAL_TIMER_ILLEGAL_ID; return -1,
+             "Invalid timer object!");
 
-    if (unlikely (count > timer->max_count))
-        {
-        errno = ERRNO_HAL_TIMER_ILLEGAL_RANGE;
-        return -1;
-        }
+    WARN_ON (count > timer->max_count,
+             errno = ERRNO_HAL_TIMER_ILLEGAL_RANGE; return -1,
+             "Invalid count!");
 
     timer->mode = mode;
 
@@ -60,17 +58,9 @@ int hal_timer_enable (hal_timer_t * timer, uint8_t mode, unsigned long count)
 
 int hal_timer_disable (hal_timer_t * timer)
     {
-    if (unlikely (timer == NULL))
-        {
-        errno = ERRNO_HAL_TIMER_ILLEGAL_ID;
-        return -1;
-        }
-
-    if (unlikely (timer->methods->disable == NULL))
-        {
-        errno = ERRNO_HAL_TIMER_ILLEGAL_OPERATION;
-        return -1;
-        }
+    WARN_ON (timer == NULL,
+             errno = ERRNO_HAL_TIMER_ILLEGAL_ID; return -1,
+             "Invalid timer object!");
 
     return timer->methods->disable (timer);
     }
@@ -87,11 +77,9 @@ int hal_timer_disable (hal_timer_t * timer)
 int hal_timer_connect (hal_timer_t * timer, void (* pfn) (uintptr_t),
                        uintptr_t arg)
     {
-    if (unlikely (timer == NULL))
-        {
-        errno = ERRNO_HAL_TIMER_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (timer == NULL,
+             errno = ERRNO_HAL_TIMER_ILLEGAL_ID; return -1,
+             "Invalid timer object!");
 
     timer->handler = pfn;
     timer->arg     = arg;
@@ -108,11 +96,9 @@ int hal_timer_connect (hal_timer_t * timer, void (* pfn) (uintptr_t),
 
 unsigned long hal_timer_counter (hal_timer_t * timer)
     {
-    if (unlikely (timer == NULL))
-        {
-        errno = ERRNO_HAL_TIMER_ILLEGAL_ID;
-        return 0;
-        }
+    WARN_ON (timer == NULL,
+             errno = ERRNO_HAL_TIMER_ILLEGAL_ID; return 0,
+             "Invalid timer object!");
 
     return timer->methods->counter (timer);
     }
@@ -126,11 +112,9 @@ unsigned long hal_timer_counter (hal_timer_t * timer)
 
 unsigned long hal_timer_period (hal_timer_t * timer)
     {
-    if (unlikely (timer == NULL))
-        {
-        errno = ERRNO_HAL_TIMER_ILLEGAL_ID;
-        return 0;
-        }
+    WARN_ON (timer == NULL,
+             errno = ERRNO_HAL_TIMER_ILLEGAL_ID; return 0,
+             "Invalid timer object!");
 
     return timer->methods->period (timer);
     }
@@ -145,17 +129,13 @@ unsigned long hal_timer_period (hal_timer_t * timer)
 
 int hal_timer_postpone (hal_timer_t * timer, unsigned long count)
     {
-    if (unlikely (timer == NULL))
-        {
-        errno = ERRNO_HAL_TIMER_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (timer == NULL,
+             errno = ERRNO_HAL_TIMER_ILLEGAL_ID; return -1,
+             "Invalid timer object!");
 
-    if (unlikely (timer->methods->postpone == NULL))
-        {
-        errno = ERRNO_HAL_TIMER_ILLEGAL_OPERATION;
-        return -1;
-        }
+    WARN_ON (timer->methods->postpone == NULL,
+             errno = ERRNO_HAL_TIMER_ILLEGAL_OPERATION; return -1,
+             "Operation <postpone> not supported!");
 
     timer->methods->postpone (timer, count);
 
@@ -172,17 +152,13 @@ int hal_timer_postpone (hal_timer_t * timer, unsigned long count)
 
 int hal_timer_prepone (hal_timer_t * timer, unsigned long count)
     {
-    if (unlikely (timer == NULL))
-        {
-        errno = ERRNO_HAL_TIMER_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (timer == NULL,
+             errno = ERRNO_HAL_TIMER_ILLEGAL_ID; return -1,
+             "Invalid timer object!");
 
-    if (unlikely (timer->methods->prepone == NULL))
-        {
-        errno = ERRNO_HAL_TIMER_ILLEGAL_OPERATION;
-        return -1;
-        }
+    WARN_ON (timer->methods->prepone == NULL,
+             errno = ERRNO_HAL_TIMER_ILLEGAL_OPERATION; return -1,
+             "Operation <prepone> not supported!");
 
     timer->methods->prepone (timer, count);
 
@@ -198,20 +174,12 @@ int hal_timer_prepone (hal_timer_t * timer, unsigned long count)
 
 int hal_timer_register (hal_timer_t * timer)
     {
-    if (unlikely (timer == NULL))
-        {
-        errno = ERRNO_HAL_TIMER_ILLEGAL_ID;
-        return -1;
-        }
-
-    if (unlikely (timer->methods == NULL          ||
-                  timer->methods->enable  == NULL ||
-                  timer->methods->counter == NULL ||
-                  timer->methods->period  == NULL))
-        {
-        errno = ERRNO_HAL_TIMER_ILLEGAL_CONFIG;
-        return -1;
-        }
+    BUG_ON (timer                   == NULL, "Invalid timer object!");
+    BUG_ON (timer->methods          == NULL, "Invalid timer methods!");
+    BUG_ON (timer->methods->enable  == NULL, "Invalid timer methods!");
+    BUG_ON (timer->methods->disable == NULL, "Invalid timer methods!");
+    BUG_ON (timer->methods->counter == NULL, "Invalid timer methods!");
+    BUG_ON (timer->methods->period  == NULL, "Invalid timer methods!");
 
     dlist_add_tail (&hal_timers, &timer->node);
 
@@ -227,7 +195,11 @@ int hal_timer_register (hal_timer_t * timer)
 
 hal_timer_t * hal_timer_get (const char * name)
     {
-    dlist_t     * itr;
+    dlist_t * itr;
+
+    WARN_ON (name == NULL,
+             errno = ERRNO_HAL_TIMER_ILLEGAL_NAME; return NULL,
+             "Invalid name!");
 
     dlist_foreach (itr, &hal_timers)
         {
@@ -250,6 +222,8 @@ hal_timer_t * hal_timer_get (const char * name)
 
     errno = ERRNO_HAL_TIMER_NOT_ENOUGH_TIMER;
 
+    WARN ("timer \"%s\" not found!", name);
+
     return NULL;
     }
 
@@ -262,14 +236,11 @@ hal_timer_t * hal_timer_get (const char * name)
  * return: 0 on success, negtive value on error
  */
 
-int hal_timer_feat_get (hal_timer_t * timer, uint32_t * max_count,
-                        uint32_t * freq)
+int hal_timer_feat_get (hal_timer_t * timer, uint32_t * max_count, uint32_t * freq)
     {
-    if (unlikely (timer == NULL))
-        {
-        errno = ERRNO_HAL_TIMER_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (timer == NULL,
+             errno = ERRNO_HAL_TIMER_ILLEGAL_ID; return -1,
+             "Invalid timer object!");
 
     if (max_count != NULL)
         {

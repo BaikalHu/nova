@@ -38,5 +38,5 @@ extern void call_trace (void);
 }
 #endif /* __cplusplus */
 
-#endif  /* __AARCH_M_TRACE_H__ */
+#endif /* __AARCH_M_TRACE_H__ */
 

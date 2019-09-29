@@ -31,11 +31,12 @@ extern "C" {
 
 /* macros */
 
-#define ERRNO_HAL_I2C_NO_MATCH              ERRNO_JOIN (MID_HAL, 0x31)
-#define ERRNO_HAL_I2C_ILLEGAL_ID            ERRNO_JOIN (MID_HAL, 0x32)
-#define ERRNO_HAL_I2C_ILLEGAL_BUFF          ERRNO_JOIN (MID_HAL, 0x33)
-#define ERRNO_HAL_I2C_ILLEGAL_CONFIG        ERRNO_JOIN (MID_HAL, 0x34)
-#define ERRNO_HAL_I2C_ILLEGAL_OPERATION     ERRNO_JOIN (MID_HAL, 0x35)
+#define ERRNO_HAL_I2C_ILLEGAL_ID            ERRNO_JOIN (MID_HAL, 0x31)
+#define ERRNO_HAL_I2C_ILLEGAL_BUFF          ERRNO_JOIN (MID_HAL, 0x32)
+#define ERRNO_HAL_I2C_ILLEGAL_CONFIG        ERRNO_JOIN (MID_HAL, 0x33)
+#define ERRNO_HAL_I2C_ILLEGAL_OPERATION     ERRNO_JOIN (MID_HAL, 0x34)
+#define ERRNO_HAL_I2C_ILLEGAL_NAME          ERRNO_JOIN (MID_HAL, 0x35)
+#define ERRNO_HAL_I2C_NO_MATCH              ERRNO_JOIN (MID_HAL, 0x36)
 
 /* typedefs */
 
@@ -88,5 +89,5 @@ extern int             hal_i2c_dev_recv     (hal_i2c_dev_t *, uint8_t *, uint16_
 }
 #endif /* __cplusplus */
 
-#endif  /* __HAL_I2C_H__ */
+#endif /* __HAL_I2C_H__ */
 

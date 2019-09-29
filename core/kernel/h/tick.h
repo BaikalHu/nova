@@ -20,17 +20,12 @@
 #include <limits.h>
 
 #include <list.h>
-#include <module.h>
-#include <errno.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
 /* macros */
-
-#define ERRNO_TICK_HZ_TOO_HIGH        ERRNO_JOIN (MID_TICK, 1)
-#define ERRNO_TICK_HZ_TOO_LOW         ERRNO_JOIN (MID_TICK, 2)
 
 #define NO_WAIT                       (0)
 #define WAIT_FOREVER                  (UINT_MAX)
@@ -65,5 +60,5 @@ extern int           tick_start       (void);
 }
 #endif /* __cplusplus */
 
-#endif  /* __TICK_H__ */
+#endif /* __TICK_H__ */
 

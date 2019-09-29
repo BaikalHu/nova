@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <class.h>
 #include <init.h>
+#include <warn.h>
 #include <bug.h>
 
 #ifdef CONFIG_CMDER
@@ -48,7 +49,7 @@ static inline void __put_chunk (heap_t * heap, chunk_t * chunk)
 
     /* chunk size not aligned */
 
-    BUG_ON (chunk->size & ALLOC_ALIGN_MASK);
+    BUG_ON (chunk->size & ALLOC_ALIGN_MASK, "chunk size not aligned!");
 
     memset (chunk + 1, 0xfe, chunk->size - sizeof (chunk_t));
 #endif
@@ -66,7 +67,7 @@ static inline void __del_chunk (heap_t * heap, chunk_t * chunk)
 
     /* chunk size not aligned */
 
-    BUG_ON (chunk->size & ALLOC_ALIGN_MASK);
+    BUG_ON (chunk->size & ALLOC_ALIGN_MASK, "chunk size not aligned!");
 #endif
 
     __cm_del_chunk (&heap->cm, chunk);
@@ -101,11 +102,9 @@ static inline chunk_t * __get_chunk (heap_t * heap, size_t size)
 
 int heap_init (heap_t * heap)
     {
-    if (heap == NULL)
-        {
-        errno = ERRNO_HEAP_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (heap == NULL,
+             errno = ERRNO_HEAP_ILLEGAL_ID; return -1,
+             "Invalid heap id!");
 
     return obj_init (heap_class, &heap->obj);
     }
@@ -132,35 +131,6 @@ static int __heap_add (heap_t * heap, char * buff, size_t size)
     {
     block_t * cb;
     chunk_t * chunk, * last;
-    size_t    mask = ~((size_t) ALLOC_ALIGN_MASK);
-
-    if (unlikely (heap == NULL))
-        {
-        errno = ERRNO_HEAP_ILLEGAL_ID;
-        return -1;
-        }
-
-    if (unlikely (buff == NULL))
-        {
-        errno = ERRNO_HEAP_ILLEGAL_BLOCK;
-        return -1;
-        }
-
-    size -= (uintptr_t) buff & ALLOC_ALIGN_MASK;
-    size &= mask;
-    buff  = (char *) ((uintptr_t) buff & mask);
-
-    if (unlikely (buff > (buff + size)))
-        {
-        errno = ERRNO_HEAP_ILLEGAL_BLOCK;
-        return -1;
-        }
-
-    if (unlikely (size < MIN_BLOCK_SIZE))
-        {
-        errno = ERRNO_HEAP_ILLEGAL_BLOCK;
-        return -1;
-        }
 
     if (unlikely (mutex_lock (&heap->mux) != 0))
         {
@@ -221,7 +191,29 @@ static int __heap_add (heap_t * heap, char * buff, size_t size)
 
 int heap_add (heap_t * heap, char * buff, size_t size)
     {
-    int ret;
+    char * end;
+    int    ret;
+
+    WARN_ON (heap == NULL,
+             errno = ERRNO_HEAP_ILLEGAL_ID;    return -1,
+             "Invalid heap id!");
+
+    WARN_ON (buff == NULL,
+             errno = ERRNO_HEAP_ILLEGAL_BLOCK; return -1,
+             "Invalid buffer!");
+
+    WARN_ON ((uintptr_t) buff > ((uintptr_t) buff + (uintptr_t) size),
+             errno = ERRNO_HEAP_ILLEGAL_BLOCK; return -1,
+             "Invalid buffer!");
+
+    end  = buff + size;
+
+    buff = (char *) round_up   (buff, ALLOC_ALIGN);
+    size = (size_t) round_down (end,  ALLOC_ALIGN) - (size_t) buff;
+
+    WARN_ON (size < MIN_BLOCK_SIZE,
+             errno = ERRNO_HEAP_ILLEGAL_BLOCK; return -1,
+             "Invalid buffer");
 
     if (unlikely (obj_verify_protect (heap_class, &heap->obj) != 0))
         {
@@ -229,21 +221,22 @@ int heap_add (heap_t * heap, char * buff, size_t size)
         }
 
 #ifdef MAX_CHUNK_SIZE
-    do
-        {
-        if (size > MAX_CHUNK_SIZE)
-            {
-            ret   = __heap_add (heap, buff, MAX_CHUNK_SIZE);
+    ret = -1;
 
-            buff += MAX_CHUNK_SIZE;
-            size -= MAX_CHUNK_SIZE;
-            }
-        else
+    while (size >= MIN_BLOCK_SIZE)
+        {
+        size_t s = size > MAX_CHUNK_SIZE ? MAX_CHUNK_SIZE : size;
+
+        if (__heap_add (heap, buff, s) != 0)
             {
-            ret   = __heap_add (heap, buff, size);
             break;
             }
-        } while (likely (ret == 0));
+
+        ret = 0;
+
+        size -= s;
+        buff += s;
+        }
 #else
     ret = __heap_add (heap, buff, size);
 #endif
@@ -277,7 +270,7 @@ static inline char * __carve_extra (heap_t * heap, chunk_t * chunk,
 
     /* memory not aligned */
 
-    BUG_ON ((uintptr_t) mem & ALLOC_ALIGN_MASK);
+    BUG_ON ((uintptr_t) mem & ALLOC_ALIGN_MASK, "memory not aligned!");
 #endif
 
     if (aligned_mem != mem)
@@ -425,26 +418,22 @@ char * heap_alloc_align (heap_t * heap, size_t align, size_t bytes)
     chunk_t * chunk;
     char    * mem = NULL;
 
-    if (heap == NULL)
-        {
-        errno = ERRNO_HEAP_ILLEGAL_ID;
-        return NULL;
-        }
+    WARN_ON (heap == NULL,
+             errno = ERRNO_HEAP_ILLEGAL_ID;    return NULL,
+             "Invalid heap id!");
 
     /* align must be power of 2 */
 
-    if (align & (align - 1))
-        {
-        errno = ERRNO_HEAP_ILLEGAL_ALIGN;
-        return NULL;
-        }
+    WARN_ON (align & (align - 1),
+             errno = ERRNO_HEAP_ILLEGAL_ALIGN; return NULL,
+             "Invalid alignment!");
 
     align = unlikely (align < ALLOC_ALIGN) ? ALLOC_ALIGN : align;
 
     /* ALLOC_MIN_SIZE is defined as sizeof (dlist_t) */
 
-    bytes = unlikely (bytes < ALLOC_MIN_SIZE)   ? ALLOC_MIN_SIZE
-                                                : round_up (bytes, ALLOC_ALIGN);
+    bytes = unlikely (bytes < ALLOC_MIN_SIZE) ? ALLOC_MIN_SIZE
+                                              : round_up (bytes, ALLOC_ALIGN);
 
     if (unlikely (obj_verify_protect (heap_class, &heap->obj) != 0))
         {
@@ -464,14 +453,13 @@ char * heap_alloc_align (heap_t * heap, size_t align, size_t bytes)
             }
 
         (void) mutex_unlock (&heap->mux);
-
-        if (mem == NULL)
-            {
-            errno = ERRNO_HEAP_NOT_ENOUGH_MEMORY;
-            }
         }
 
     obj_unprotect (&heap->obj);
+
+    WARN_ON (mem == NULL,
+             errno = ERRNO_HEAP_NOT_ENOUGH_MEMORY,
+             "Not enough memory!");
 
     return mem;
     }
@@ -502,10 +490,9 @@ void heap_free (heap_t * heap, char * mem)
     chunk_t * prev_chunk;
     chunk_t * next_chunk;
 
-    if (unlikely (heap == NULL))
-        {
-        return;
-        }
+    WARN_ON (heap == NULL,
+             errno = ERRNO_HEAP_ILLEGAL_ID; return,
+             "Invalid heap id!");
 
     /* ANSI C - free of NULL is OK */
 
@@ -637,6 +624,10 @@ char * __realloc (heap_t * heap, char * ptr, size_t size)
 
 char * heap_realloc (heap_t * heap, char * ptr, size_t size)
     {
+    WARN_ON (heap == NULL,
+             errno = ERRNO_HEAP_ILLEGAL_ID; return NULL,
+             "Invalid heap id!");
+
     if (ptr == NULL)
         {
         return heap_alloc (heap, size);
@@ -672,10 +663,13 @@ char * heap_realloc (heap_t * heap, char * ptr, size_t size)
 #ifdef CONFIG_MEM_STATISTICS
 int heap_stat_get (heap_t * heap, mem_stat_t * stat)
     {
-    if ((heap == NULL) || (stat == NULL))
-        {
-        return -1;
-        }
+    WARN_ON (heap == NULL,
+             errno = ERRNO_HEAP_ILLEGAL_ID;   return -1,
+             "Invalid heap id!");
+
+    WARN_ON (stat == NULL,
+             errno = ERRNO_HEAP_ILLEGAL_STAT; return -1,
+             "Invalid stat!");
 
     if (unlikely (obj_verify_protect (heap_class, &heap->obj) != 0))
         {
@@ -759,13 +753,11 @@ static int heap_lib_init (void)
     const struct phys_mem * spm = system_phys_mem;
     int                     block_added = 0;
 
-    if (unlikely (class_init (heap_class, MID_HEAP, sizeof (heap_t),
-                              __heap_init, __heap_destroy, NULL, NULL) != 0))
-        {
-        BUG ("fail to initialize heap_class!");
-        }
+    BUG_ON (class_init (heap_class, MID_HEAP, sizeof (heap_t),
+                        __heap_init, __heap_destroy, NULL, NULL) != 0,
+            "fail to initialize heap_class!");
 
-    BUG_ON (heap_init (kernel_heap) != 0);
+    BUG_ON (heap_init (kernel_heap) != 0, "fail to initialize kernel_heap!");
 
     while (spm->end)
         {
@@ -777,7 +769,7 @@ static int heap_lib_init (void)
         spm++;
         }
 
-    BUG_ON (block_added == 0);
+    BUG_ON (block_added == 0, "no block added!");
 
     return 0;
     }

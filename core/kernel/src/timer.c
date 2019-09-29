@@ -26,7 +26,7 @@
 #include <critical.h>
 #include <errno.h>
 #include <init.h>
-#include <bug.h>
+#include <warn.h>
 
 /* globals */
 
@@ -51,11 +51,9 @@ class_t timer_class [1];
 int timer_init (timer_id timer, uint16_t flags, unsigned long interval,
                 void (* pfn) (uintptr_t), uintptr_t arg)
     {
-    if (unlikely (timer == NULL))
-        {
-        errno = ERRNO_TIMER_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (timer == NULL,
+             errno = ERRNO_TIMER_ILLEGAL_ID; return -1,
+             "Invalid timer id!");
 
     return obj_init (timer_class, &timer->obj, flags, interval, pfn, arg);
     }
@@ -153,11 +151,9 @@ static int __timer_start (uintptr_t arg1, uintptr_t arg2)
 
 int timer_start (timer_id timer)
     {
-    if (timer == NULL)
-        {
-        errno = ERRNO_TIMER_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (timer == NULL,
+             errno = ERRNO_TIMER_ILLEGAL_ID; return -1,
+             "Invalid timer id!");
 
     return do_critical (__timer_start, (uintptr_t) timer, 0);
     }
@@ -194,11 +190,9 @@ static int __timer_stop (uintptr_t arg1, uintptr_t arg2)
 
 int timer_stop (timer_id timer)
     {
-    if (timer == NULL)
-        {
-        errno = ERRNO_TIMER_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (timer == NULL,
+             errno = ERRNO_TIMER_ILLEGAL_ID; return -1,
+             "Invalid timer id!");
 
     return do_critical (__timer_stop, (uintptr_t) timer, 0);
     }
@@ -235,11 +229,9 @@ static int __timer_delete (uintptr_t arg1, uintptr_t arg2)
 
 int timer_delete (timer_id timer)
     {
-    if (timer == NULL)
-        {
-        errno = ERRNO_TIMER_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (timer == NULL,
+             errno = ERRNO_TIMER_ILLEGAL_ID; return -1,
+             "Invalid timer id!");
 
     /* this routine is restricted to be invoked in task context */
 
@@ -266,23 +258,17 @@ static int __timer_init (obj_id obj, va_list valist)
     pfn      = va_arg (valist, void (*) (uintptr_t));
     arg      = va_arg (valist, uintptr_t);
 
-    if (unlikely (flags > TIMER_FLAG_REPEATED))
-        {
-        errno = ERRNO_TIMER_ILLEGAL_FLAG;
-        return -1;
-        }
+    WARN_ON (flags > TIMER_FLAG_REPEATED,
+             errno = ERRNO_TIMER_ILLEGAL_FLAG;     return -1,
+             "Invalid flag!");
 
-    if (unlikely (interval == 0))
-        {
-        errno = ERRNO_TIMER_ILLEGAL_INTERVAL;
-        return -1;
-        }
+    WARN_ON (interval == 0,
+             errno = ERRNO_TIMER_ILLEGAL_INTERVAL; return -1,
+             "Invalid interval!");
 
-    if (unlikely (pfn == NULL))
-        {
-        errno = ERRNO_TIMER_ILLEGAL_PFN;
-        return -1;
-        }
+    WARN_ON (pfn == NULL,
+             errno = ERRNO_TIMER_ILLEGAL_PFN;      return -1,
+             "Invalid callback!");
 
     timer->status   = TIMER_STAT_INACTIVE;
     timer->flags    = (uint16_t) flags;
@@ -309,7 +295,7 @@ static int timer_lib_init (void)
     if (class_init (timer_class, MID_TIMER, sizeof (timer_t),
                     __timer_init, __timer_destroy, NULL, NULL) != 0)
         {
-        WARN ("fail to init timer_class!");
+        WARN ("Fail to init timer_class!");
         return -1;
         }
 

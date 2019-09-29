@@ -18,18 +18,22 @@
 
 #include <kconfig.h>
 
+#ifdef CONFIG_DEBUG
+
 #include <irq.h>
 #include <kprintf.h>
 
 #include <arch/trace.h>
+#endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+/*
+ * BUG - enter bug state
+ *
+ * usage: BUG (format, args), arguments is the same as kprintf
+ */
 
 #ifdef CONFIG_DEBUG
-
-#define BUG(str)                                                                \
+#define BUG(...)                                                                \
 do                                                                              \
     {                                                                           \
                                                                                 \
@@ -37,69 +41,50 @@ do                                                                              
                                                                                 \
     (void) int_lock ();                                                         \
                                                                                 \
-    kprintf ("\nBUG @ (file : %s, line : %d)\n", __FILE__, __LINE__);           \
+    kprintf ("\nBUG, " __VA_ARGS__);                                            \
                                                                                 \
-    __bug (str);                                                                \
+    kprintf ("\n@ (file : %s, line : %d)", __FILE__, __LINE__);                 \
+                                                                                \
+    __bug ("");                                                                 \
     } while (0)
-
-#define BUG_ON(cond)                                                            \
-do                                                                              \
-    {                                                                           \
-    if (unlikely (cond))                                                        \
-        {                                                                       \
-        BUG (__CVTSTR_RAW (cond));                                              \
-        }                                                                       \
-    } while (0)
-
-#define WARN(str)                                                               \
-do                                                                              \
-    {                                                                           \
-    kprintf ("\nWARN @ (file : %s, line : %d)\n", __FILE__, __LINE__);          \
-    kprintf ("\"%s\"\n", str);                                                  \
-    call_trace ();                                                              \
-    } while (0)
-
-#define WARN_ON(cond)                                                           \
-do                                                                              \
-    {                                                                           \
-    if (unlikely (cond))                                                        \
-        {                                                                       \
-        WARN (__CVTSTR_RAW (cond));                                             \
-        }                                                                       \
-    } while (0)
-
 #else
+#define BUG(...)
+#endif
 
-#define BUG(str)                                                                \
+/*
+ * BUG_ON - executive code and enter to bug state when the result is true
+ *
+ * code:   the code to executive, note, it will be executived always regardless
+ *         to the macro of CONFIG_DEBUG, if the code is comperation only, compiler
+ *         can do correct optimization
+ *
+ * examples:
+ *
+ *     BUG_ON (xxx != 0, "xxx is %d", xxx);
+ *
+ *     BUG_ON (xxx == 0, "xxx is not supported");
+ */
+
+#ifdef CONFIG_DEBUG
+#define BUG_ON(code, ...)                                                       \
 do                                                                              \
     {                                                                           \
-    __bug (str);                                                                \
-    } while (0)
-
-#define BUG_ON(cond)                                                            \
-do                                                                              \
-    {                                                                           \
-    if (unlikely (cond))                                                        \
+    if (unlikely (code))                                                        \
         {                                                                       \
-        BUG (__CVTSTR_RAW (cond));                                              \
+        BUG ("\"" __CVTSTR_RAW (code) "\" unexpected!\n" __VA_ARGS__);          \
         }                                                                       \
     } while (0)
-
-#define WARN(str)                                                               \
+#else
+#define BUG_ON(cond, ...)                                                       \
 do                                                                              \
     {                                                                           \
-    __asm__ __volatile__ ("" : : : "memory");                                   \
-    } while (0)
-
-#define WARN_ON(cond)                                                           \
-do                                                                              \
-    {                                                                           \
-    if (unlikely (cond))                                                        \
-        {                                                                       \
-        __asm__ __volatile__ ("" : : : "memory");                               \
-        }                                                                       \
+    (void) (cond);                                                              \
     } while (0)
 #endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 extern void __bug (const char *);
 
@@ -107,5 +92,5 @@ extern void __bug (const char *);
 }
 #endif /* __cplusplus */
 
-#endif  /* __BUG_H__ */
+#endif /* __BUG_H__ */
 

@@ -66,4 +66,4 @@ extern int      timer_delete (timer_id);
 }
 #endif /* __cplusplus */
 
-#endif  /* __TIMER_H__ */
+#endif /* __TIMER_H__ */

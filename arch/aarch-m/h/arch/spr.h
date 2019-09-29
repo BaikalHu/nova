@@ -293,5 +293,5 @@ static __always_inline uint32_t __get_ipsr (void)
 }
 #endif /* __cplusplus */
 
-#endif  /* __AARCH_M_SPR_H__ */
+#endif /* __AARCH_M_SPR_H__ */
 

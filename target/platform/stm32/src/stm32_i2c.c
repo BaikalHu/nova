@@ -20,6 +20,7 @@
 #include <config.h>
 #include <hal_i2c.h>
 #include <init.h>
+#include <warn.h>
 #include <symn2c.h>
 
 /* typedefs */
@@ -96,6 +97,7 @@ static int __stm32_i2c_init (struct stm32_i2c * i2c, I2C_TypeDef * base,
 
     if (HAL_I2C_Init (&i2c->handle) != HAL_OK)
         {
+        WARN ("HAL_I2C_Init fail!");
         return -1;
         }
 

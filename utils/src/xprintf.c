@@ -261,8 +261,16 @@ reswitch:
             case 'p':
                 outputs += output (outarg, '0');
                 outputs += output (outarg, 'x');
-                xpf.width = sizeof (uintptr_t) * 2;
-                xpf.pad = '0';
+                if (xpf.width == 1)
+                    {
+                    xpf.width = sizeof (uintptr_t) * 2;
+                    }
+                else if (xpf.width > 2)
+                    {
+                    xpf.width -= 2;
+                    }
+
+                xpf.pad = xpf.align == XPF_ALIGN_LEFT ? ' ' : '0';
             case 'x':
                 charset = "0123456789abcdef";
             case 'X':

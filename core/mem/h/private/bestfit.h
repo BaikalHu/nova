@@ -334,5 +334,5 @@ static inline size_t __get_max_free (chunk_mgr_t * cm)
 }
 #endif /* __cplusplus */
 
-#endif  /* __CM_BESTFIT_H__ */
+#endif /* __CM_BESTFIT_H__ */
 

@@ -77,5 +77,5 @@ extern int    ifconfig       (const char *, const char *, const char *,
                               const char *, const char *);
 extern u8_t * ethif_getmac   (struct ethif *);
 
-#endif  /* __ETHIF_H__ */
+#endif /* __ETHIF_H__ */
 

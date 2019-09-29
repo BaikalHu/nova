@@ -77,5 +77,5 @@ extern obj_id obj_find           (class_id, const char *);
 }
 #endif /* __cplusplus */
 
-#endif  /* __OBJ_H__ */
+#endif /* __OBJ_H__ */
 

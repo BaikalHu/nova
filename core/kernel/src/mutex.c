@@ -25,6 +25,7 @@
 #include <irq.h>
 #include <errno.h>
 #include <init.h>
+#include <warn.h>
 #include <bug.h>
 
 #ifdef CONFIG_SYSCALL
@@ -49,11 +50,9 @@ class_t mutex_class [1];
 
 int mutex_init (mutex_id mutex)
     {
-    if (unlikely (mutex == NULL))
-        {
-        errno = ERRNO_MUTEX_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (mutex == NULL,
+             errno = ERRNO_MUTEX_ILLEGAL_ID; return -1,
+             "Invalid mutex id");
 
     return obj_init (mutex_class, &mutex->obj);
     }
@@ -339,11 +338,9 @@ static int __mutex_lock (uintptr_t arg1, uintptr_t arg2)
 
 int mutex_timedlock (mutex_id mutex, unsigned int timeout)
     {
-    if (unlikely (mutex == NULL))
-        {
-        errno = ERRNO_MUTEX_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (mutex == NULL,
+             errno = ERRNO_MUTEX_ILLEGAL_ID; return -1,
+             "Invalid mutex id");
 
     if (unlikely (current == NULL))
         {
@@ -390,11 +387,9 @@ int __mutex_unlock (uintptr_t arg1, uintptr_t arg2)
         return -1;
         }
 
-    if (unlikely (mutex->owner != current))
-        {
-        errno = ERRNO_MUTEX_ILLEGAL_OPERATION;
-        return -1;
-        }
+    WARN_ON (mutex->owner != current,
+             errno = ERRNO_MUTEX_ILLEGAL_OPERATION; return -1,
+             "Invalid operation!");
 
     if (--mutex->recurse != 0)
         {
@@ -435,11 +430,9 @@ int __mutex_unlock (uintptr_t arg1, uintptr_t arg2)
 
 int mutex_unlock (mutex_id mutex)
     {
-    if (unlikely (mutex == NULL))
-        {
-        errno = ERRNO_MUTEX_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (mutex == NULL,
+             errno = ERRNO_MUTEX_ILLEGAL_ID; return -1,
+             "Invalid mutex id");
 
     if (unlikely (current == NULL))
         {
@@ -517,11 +510,9 @@ static int __mutex_destroy (obj_id obj)
 
 static int mutex_lib_init (void)
     {
-    if (class_init (mutex_class, MID_MUTEX, sizeof (mutex_t),
-                    __mutex_init, __mutex_destroy, NULL, NULL) != 0)
-        {
-        BUG ("fail to initialize mutex_class!");
-        }
+    BUG_ON (class_init (mutex_class, MID_MUTEX, sizeof (mutex_t),
+                        __mutex_init, __mutex_destroy, NULL, NULL) != 0,
+            "Fail to initialize mutex_class!");
 
     return 0;
     }

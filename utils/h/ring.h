@@ -102,5 +102,5 @@ extern size_t   ring_getc       (ring_t * ring, unsigned char * byte);
 }
 #endif /* __cplusplus */
 
-#endif  /* __RING_H__ */
+#endif /* __RING_H__ */
 

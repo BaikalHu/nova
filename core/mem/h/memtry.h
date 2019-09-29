@@ -43,5 +43,5 @@ extern int mem_try (void * dst, void * src, int order);
 }
 #endif /* __cplusplus */
 
-#endif  /* __MEMTRY_H__ */
+#endif /* __MEMTRY_H__ */
 

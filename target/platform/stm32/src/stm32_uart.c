@@ -21,6 +21,7 @@
 #include <hal_uart.h>
 #include <hal_int.h>
 #include <init.h>
+#include <warn.h>
 #include <defer.h>
 #include <symn2c.h>
 
@@ -182,6 +183,7 @@ static int __stm32_uart_chan_init (struct stm32_uart * uart, USART_TypeDef * bas
 
     if (HAL_UART_Init (handle) != HAL_OK)
         {
+        WARN ("HAL_UART_Init fail!");
         return -1;
         }
 

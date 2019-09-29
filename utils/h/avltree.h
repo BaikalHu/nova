@@ -39,5 +39,5 @@ typedef struct avl_tree
 }
 #endif /* __cplusplus */
 
-#endif  /* __AVLTREE_H__ */
+#endif /* __AVLTREE_H__ */
 

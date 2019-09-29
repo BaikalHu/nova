@@ -31,6 +31,8 @@ kconfig = None
 
 prjname = os.getcwd ().split (sep = "/") [-1] + ".prj"
 
+bdfname = "flags.ini"
+
 def get_project ():
     global project
 
@@ -204,16 +206,32 @@ def parse_workspace (workspace, force):
 
     return project
 
-def get_bdf_ini ():
+def get_bdf_ini (name, prj):
     global bdf_ini
 
     if not project:
         return None
 
-    if not bdf_ini:
-        if os.path.exists ("bdf.ini"):
-            bdf_ini = configparser.ConfigParser ()
-            bdf_ini.read_file (open ("bdf.ini"))
+    if bdf_ini:
+        return bdf_ini
+
+    if not os.path.exists (name):
+        return None
+
+    # refresh IDE project only if the build flags file changed
+    if os.path.exists (bdfname):
+        with open (bdfname,  "r") as old:
+            with open (name, "r") as new:
+                if old.readlines () == new.readlines () and os.path.exists (prj):
+                    os.remove (name)
+                    quit ()
+
+        os.remove (bdfname)
+
+    os.rename (name, bdfname)
+
+    bdf_ini = configparser.ConfigParser ()
+    bdf_ini.read_file (open (bdfname))
 
     return bdf_ini
 

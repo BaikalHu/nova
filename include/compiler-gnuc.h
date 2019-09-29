@@ -211,5 +211,5 @@ static __always_inline int __ctz_u64 (uint64_t x)
 }
 #endif /* __cplusplus */
 
-#endif  /* __COMPILER_GNUC_H__ */
+#endif /* __COMPILER_GNUC_H__ */
 

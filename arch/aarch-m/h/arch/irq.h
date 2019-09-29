@@ -130,4 +130,4 @@ static __always_inline bool int_context_arch (void)
 }
 #endif /* __cplusplus */
 
-#endif  /* __AARCH_M_IRQ_H__ */
+#endif /* __AARCH_M_IRQ_H__ */

@@ -29,7 +29,7 @@ static inline u32_t __ms_to_tick (u32_t ms)
 
 void sys_init (void)
     {
-    BUG_ON (mutex_init (&__prot_lock) != 0);
+    BUG_ON (mutex_init (&__prot_lock) != 0, "Fail to initialize __prot_lock!");
     }
 
 u32_t sys_now (void)

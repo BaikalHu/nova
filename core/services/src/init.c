@@ -20,7 +20,7 @@
 #include <irq.h>
 #include <errno.h>
 #include <kprintf.h>
-#include <bug.h>
+#include <warn.h>
 
 #include <arch/interface.h>
 
@@ -47,8 +47,8 @@ __noreturn void kernel_init (void)
         {
         if ((*init) () != 0)
             {
-            kprintf ("kernel initialization fail, last routine is %p, errno = %p\n",
-                     *init, errno);
+            WARN ("Kernel initialization fail, last routine is %p, errno = %p\n",
+                  *init, errno);
             }
         }
 
@@ -75,11 +75,7 @@ static int user_init (void)
     tid = task_spawn ("main", CONFIG_MAIN_TASK_PRIO, CONFIG_MAIN_TASK_OPTIONS,
                       CONFIG_MAIN_TASK_STACK_SIZE, (int (*) (uintptr_t)) main, 0);
 
-    if (tid == NULL)
-        {
-        WARN ("fail to create user task <main>!");
-        return -1;
-        }
+    WARN_ON (tid == NULL, return -1, "Fail to create user task <main>!");
 
     return 0;
     }

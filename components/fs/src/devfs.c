@@ -21,6 +21,7 @@
 #include <common.h>
 #include <devfs.h>
 #include <init.h>
+#include <warn.h>
 #include <bug.h>
 
 struct devfs_file
@@ -38,10 +39,9 @@ static struct devfs_file * __get_devfile (const char * name)
     dlist_t           * itr;
     struct devfs_file * file;
 
-    if (strchr (name, '/') != NULL)
-        {
-        return NULL;
-        }
+    WARN_ON (strchr (name, '/') != NULL,
+             return NULL,
+             "Invalid device name!");
 
     dlist_foreach (itr, &devfs_files)
         {
@@ -52,6 +52,8 @@ static struct devfs_file * __get_devfile (const char * name)
             return file;
             }
         }
+
+    WARN ("File not found!");
 
     return NULL;
     }
@@ -83,11 +85,9 @@ static int devfs_read (uintptr_t fl_data, char * buff, size_t nbyte)
     {
     struct devfs_file * file = (struct devfs_file *) fl_data;
 
-    if (file->ops->read == NULL)
-        {
-        errno = ENOTSUP;
-        return -1;
-        }
+    WARN_ON (file->ops->read == NULL,
+             errno = ENOTSUP; return -1,
+             "File has no <read> method!");
 
     return file->ops->read (file->data, buff, nbyte);
     }
@@ -96,11 +96,9 @@ static int devfs_write (uintptr_t fl_data, const char * buff, size_t nbyte)
     {
     struct devfs_file * file = (struct devfs_file *) fl_data;
 
-    if (file->ops->write == NULL)
-        {
-        errno = ENOTSUP;
-        return -1;
-        }
+    WARN_ON (file->ops->write == NULL,
+             errno = ENOTSUP; return -1,
+             "File has no <write> method!");
 
     return file->ops->write (file->data, buff, nbyte);
     }
@@ -109,11 +107,9 @@ static int devfs_lseek (uintptr_t fl_data, int off, int whence)
     {
     struct devfs_file * file = (struct devfs_file *) fl_data;
 
-    if (file->ops->lseek == NULL)
-        {
-        errno = ENOTSUP;
-        return -1;
-        }
+    WARN_ON (file->ops->lseek == NULL,
+             errno = ENOTSUP; return -1,
+             "File has no <lseek> method!");
 
     return file->ops->lseek (file->data, off, whence);
     }
@@ -122,11 +118,9 @@ static int devfs_ioctl (uintptr_t fl_data, int request, va_list valist)
     {
     struct devfs_file * file = (struct devfs_file *) fl_data;
 
-    if (file->ops->ioctl == NULL)
-        {
-        errno = ENOTSUP;
-        return -1;
-        }
+    WARN_ON (file->ops->ioctl == NULL,
+             errno = ENOTSUP; return -1,
+             "File has no <ioctl> method!");
 
     return file->ops->ioctl (file->data, request, valist);
     }
@@ -135,11 +129,9 @@ static int devfs_sync (uintptr_t fl_data)
     {
     struct devfs_file * file = (struct devfs_file *) fl_data;
 
-    if (file->ops->sync == NULL)
-        {
-        errno = ENOTSUP;
-        return -1;
-        }
+    WARN_ON (file->ops->sync == NULL,
+             errno = ENOTSUP; return -1,
+             "File has no <sync> method!");
 
     return file->ops->sync (file->data);
     }
@@ -148,11 +140,9 @@ static int devfs_stat (uintptr_t mp_data, const char * name, struct stat * stat)
     {
     struct devfs_file * file = __get_devfile (name);
 
-    if (file == NULL)
-        {
-        errno = EBADF;
-        return -1;
-        }
+    WARN_ON (file == NULL,
+             errno = EBADF; return -1,
+             "File\"%s\" not exist!", name);
 
     memset (stat, 0, sizeof (struct stat));
 
@@ -187,18 +177,15 @@ static int devfs_opendir (uintptr_t mp_data, uintptr_t * dr_data_ptr, const char
     {
     uint32_t * offset;
 
-    if (unlikely (*path != '\0'))
-        {
-        errno = ENOENT;
-        return -1;
-        }
+    WARN_ON (*path != '\0',
+             errno = ENOENT; return -1,
+             "Dir under devfs not supported for now!");
 
     offset = (uint32_t *) malloc (sizeof (uint32_t));
 
-    if (offset == NULL)
-        {
-        return -1;
-        }
+    WARN_ON (offset == NULL,
+             return -1,
+             "Fail to allocate memory for offset!");
 
     *offset      = 0;
     *dr_data_ptr = (uintptr_t) offset;
@@ -298,28 +285,32 @@ static struct file_system devfs =
  * return : 0 on success, negtive value on error
  */
 
-int devfs_add_file (const char * name, const struct devfs_ops * ops, uintptr_t data)
+int devfs_add_file (const char * name, const struct devfs_ops * fops, uintptr_t data)
     {
     struct devfs_file * file;
 
-    if (name == NULL || ops == NULL || strchr (name, '/') != NULL)
-        {
-        return -1;
-        }
+    WARN_ON (name == NULL || strchr (name, '/') != NULL,
+             return -1,
+             "Invalid name!");
 
     /* CONFIG_MAX_FILE_NAME_LEN - 1 for the id and '\0' */
 
-    if (strlen (name) >= CONFIG_MAX_FILE_NAME_LEN - 1)
+    WARN_ON (strlen (name) >= CONFIG_MAX_FILE_NAME_LEN - 1,
+             return -1,
+             "Invalid name!");
+
+    WARN_ON (fops == NULL,
+             return -1,
+             "Invalid fops!");
+
+    file = (struct devfs_file *) malloc (sizeof (struct devfs_file));
+
+    if (unlikely (file == NULL))
         {
         return -1;
         }
 
-    if ((file = (struct devfs_file *) malloc (sizeof (struct devfs_file))) == NULL)
-        {
-        return -1;
-        }
-
-    file->ops  = ops;
+    file->ops  = fops;
     file->data = data;
     file->name = name;
 
@@ -336,19 +327,12 @@ int devfs_add_file (const char * name, const struct devfs_ops * ops, uintptr_t d
 
 static int devfs_init (void)
     {
-    if (vfs_fs_register (&devfs) != 0)
-        {
-        WARN ("fail to register devfs!");
-        return -1;
-        }
 
-    if (vfs_mount ("devfs", "/dev/") != 0)
-        {
-        WARN ("fail to mount devfs!");
-        return -1;
-        }
+    /* vfs_fs_register here should never fail */
 
-    return 0;
+    (void) vfs_fs_register (&devfs);
+
+    return vfs_mount ("devfs", "/dev/");
     }
 
 MODULE_INIT (bus, devfs_init);

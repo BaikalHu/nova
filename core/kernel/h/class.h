@@ -45,7 +45,10 @@ typedef struct class
     {
     uint8_t            mid;             /* module id */
     size_t             obj_size;        /* object size */
-    mutex_t            lock;            /* lock used to protect objs list */
+    mutex_t            lock;            /* lock used to protect objs list, mutex
+                                           lock is used here instead of task_lock
+                                           because in obj_foreach, the callback
+                                           may invoke mutex_lock */
     dlist_t            objs;            /* all objects belongs to this */
     obj_init_pfn       init_rtn;
     obj_destroy_pfn    destroy_rtn;
@@ -63,5 +66,5 @@ extern int class_init (class_id, uint8_t, size_t, obj_init_pfn, obj_destroy_pfn,
 }
 #endif /* __cplusplus */
 
-#endif  /* __CLASS_H__ */
+#endif /* __CLASS_H__ */
 

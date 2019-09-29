@@ -65,7 +65,7 @@ static int __cmd_top (cmder_t * cmder, int argc, char * argv [])
         return -1;
         }
 
-    top_task = task_spawn ("top", 0, 0, 0x500, __top_task, (uintptr_t) cmder);
+    top_task = task_spawn ("top", 1, 0, 0x500, __top_task, (uintptr_t) cmder);
 
     if (unlikely (top_task == NULL))
         {

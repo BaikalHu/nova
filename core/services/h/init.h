@@ -55,5 +55,5 @@ extern  __noreturn void             kernel_init (void);
 }
 #endif /* __cplusplus */
 
-#endif  /* __INIT_H__ */
+#endif /* __INIT_H__ */
 

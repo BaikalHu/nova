@@ -8,5 +8,5 @@ static bool in_critical (void)
     return false;
     }
 
-#endif  /* __CRITICAL_H__ */
+#endif /* __CRITICAL_H__ */
 

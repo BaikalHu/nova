@@ -37,5 +37,5 @@ static inline bool int_context (void)
 }
 #endif /* __cplusplus */
 
-#endif  /* __IRQ_H__ */
+#endif /* __IRQ_H__ */
 

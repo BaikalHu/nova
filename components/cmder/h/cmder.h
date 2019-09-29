@@ -127,5 +127,5 @@ extern int cmder_printf       (cmder_t * cmder, const char * format, ...);
 }
 #endif /* __cplusplus */
 
-#endif  /* __CMDER_H__ */
+#endif /* __CMDER_H__ */
 

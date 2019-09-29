@@ -31,5 +31,5 @@ extern int xprintf (const char * format, va_list args,
 }
 #endif /* __cplusplus */
 
-#endif  /* __XPRINTF_H__ */
+#endif /* __XPRINTF_H__ */
 

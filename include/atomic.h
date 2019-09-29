@@ -38,5 +38,5 @@ typedef struct
 
 #include <arch/atomic.h>
 
-#endif  /* __ATOMIC_H__ */
+#endif /* __ATOMIC_H__ */
 

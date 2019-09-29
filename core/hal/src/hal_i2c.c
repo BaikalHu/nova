@@ -22,6 +22,7 @@
 #include <mutex.h>
 #include <errno.h>
 #include <init.h>
+#include <warn.h>
 #include <bug.h>
 
 #ifdef CONFIG_DEVFS
@@ -47,6 +48,10 @@ hal_i2c_t * hal_i2c_open (const char * name)
     dlist_t   * itr;
     hal_i2c_t * i2c;
 
+    WARN_ON (name == NULL,
+             errno = ERRNO_HAL_I2C_NO_MATCH; return NULL,
+             "Invalid name!");
+
     mutex_lock (&__bus_lock);
 
     dlist_foreach (itr, &__i2c_buses)
@@ -63,6 +68,8 @@ hal_i2c_t * hal_i2c_open (const char * name)
     mutex_unlock (&__bus_lock);
 
     errno = ERRNO_HAL_I2C_NO_MATCH;
+
+    WARN ("Fail to open device \"%s\"!", name);
 
     return NULL;
     }
@@ -90,33 +97,13 @@ int hal_i2c_close (hal_i2c_t * i2c)
 int hal_i2c_register (hal_i2c_t * i2c, const char * name,
                       const struct hal_i2c_methods * methods)
     {
-    static bool inited = false;
+    BUG_ON (i2c           == NULL, "Invalid i2c bus!");
+    BUG_ON (name          == NULL, "Invalid i2c bus name!");
+    BUG_ON (methods       == NULL, "Invalid i2c bus methods!");
+    BUG_ON (methods->xfer == NULL, "Invalid i2c bus methods!");
+    BUG_ON (methods->recv == NULL, "Invalid i2c bus methods!");
 
-    /* invoked at pre-kernel, needless protect */
-
-    if (unlikely (!inited))
-        {
-        if (mutex_init (&__bus_lock) != 0)
-            {
-            return -1;
-            }
-
-        inited = true;
-        }
-
-    if (unlikely (i2c == NULL))
-        {
-        errno = ERRNO_HAL_I2C_ILLEGAL_ID;
-        return -1;
-        }
-
-    if (unlikely (name == NULL || methods == NULL))
-        {
-        errno = ERRNO_HAL_I2C_ILLEGAL_CONFIG;
-        return -1;
-        }
-
-    if (mutex_init (&i2c->lock))
+    if (mutex_init (&i2c->lock)  != 0)
         {
         return -1;
         }
@@ -151,11 +138,9 @@ int hal_i2c_xfer (hal_i2c_t * i2c, uint16_t addr, const uint8_t * data,
     {
     int ret;
 
-    if (unlikely (i2c == NULL))
-        {
-        errno = ERRNO_HAL_I2C_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (i2c == NULL,
+             errno = ERRNO_HAL_I2C_ILLEGAL_ID; return -1,
+             "Invalid I2C bus!");
 
     if (unlikely (mutex_lock (&i2c->lock) != 0))
         {
@@ -183,11 +168,9 @@ int hal_i2c_recv (hal_i2c_t * i2c, uint16_t addr, uint8_t * data, uint16_t size)
     {
     int ret;
 
-    if (unlikely (i2c == NULL))
-        {
-        errno = ERRNO_HAL_I2C_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (i2c == NULL,
+             errno = ERRNO_HAL_I2C_ILLEGAL_ID; return -1,
+             "Invalid I2C bus!");
 
     if (unlikely (mutex_lock (&i2c->lock) != 0))
         {
@@ -262,10 +245,7 @@ int hal_i2c_dev_register (hal_i2c_dev_t * dev, const char * bus,
     {
     hal_i2c_t * i2c = hal_i2c_open (bus);
 
-    if (unlikely (i2c == NULL))
-        {
-        return -1;
-        }
+    BUG_ON (i2c == NULL, "Invalid I2C device!");
 
     dev->i2c    = i2c;
     dev->name   = name;
@@ -302,6 +282,10 @@ hal_i2c_dev_t * hal_i2c_dev_open (const char * name)
     dlist_t       * itr;
     hal_i2c_dev_t * dev;
 
+    WARN_ON (name == NULL,
+             return NULL,
+             "Invalid name!");
+
     mutex_lock (&__dev_lock);
 
     dlist_foreach (itr, &__i2c_devs)
@@ -319,6 +303,8 @@ hal_i2c_dev_t * hal_i2c_dev_open (const char * name)
 
     errno = ERRNO_HAL_I2C_NO_MATCH;
 
+    WARN ("Fail to open device \"%s\"!", name);
+
     return NULL;
     }
 
@@ -333,6 +319,11 @@ hal_i2c_dev_t * hal_i2c_dev_open (const char * name)
 
 int hal_i2c_dev_xfer (hal_i2c_dev_t * dev, const uint8_t * data, uint16_t size)
     {
+    WARN_ON (dev == NULL,
+             return -1,
+             "Invalid I2C device!"
+             );
+
     return hal_i2c_xfer (dev->i2c, dev->addr, data, size);
     }
 
@@ -347,6 +338,11 @@ int hal_i2c_dev_xfer (hal_i2c_dev_t * dev, const uint8_t * data, uint16_t size)
 
 int hal_i2c_dev_recv (hal_i2c_dev_t * dev, uint8_t * data, uint16_t size)
     {
+    WARN_ON (dev == NULL,
+             return -1,
+             "Invalid I2C device!"
+             );
+
     return hal_i2c_recv (dev->i2c, dev->addr, data, size);
     }
 
@@ -360,13 +356,11 @@ static int hal_i2c_init (void)
     {
     if (unlikely (mutex_init (&__bus_lock) != 0))
         {
-        WARN ("fail to init __bus_lock!");
         return -1;
         }
 
     if (unlikely (mutex_init (&__dev_lock) != 0))
         {
-        WARN ("fail to init __dev_lock!");
         return -1;
         }
 

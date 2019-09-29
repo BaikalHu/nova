@@ -58,5 +58,5 @@ extern "C" {
 }
 #endif /* __cplusplus */
 
-#endif  /* __MODULE_H__ */
+#endif /* __MODULE_H__ */
 

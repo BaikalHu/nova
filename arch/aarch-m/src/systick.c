@@ -20,7 +20,6 @@
 #include <irq.h>
 #include <hal_timer.h>
 #include <init.h>
-#include <bug.h>
 
 #ifdef CONFIG_PROFILE
 #include <profile.h>
@@ -113,13 +112,10 @@ static hal_timer_t systick_timer =
 
 static int systick_init (void)
     {
-    if (hal_timer_register (&systick_timer) != 0)
-        {
-        WARN ("fail to register systick_timer!");
-        return -1;
-        }
 
-    return 0;
+    /* hal_timer_register must not fail */
+
+    return hal_timer_register (&systick_timer);
     }
 
 MODULE_INIT (driver, systick_init);

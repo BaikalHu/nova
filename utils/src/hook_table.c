@@ -16,6 +16,7 @@
 #include <stdint.h>
 
 #include <mutex.h>
+#include <warn.h>
 
 /**
  * hook_table_add - add a routine to the a hook table
@@ -43,10 +44,9 @@ int hook_table_add (uintptr_t * hooks, int slots, uintptr_t pfn)
 
     task_unlock ();
 
-    if (unlikely (i == slots))
-        {
-        return -1;
-        }
+    WARN_ON (i == slots,
+             return -1,
+             "Not enough hook slot, hook_table = %p, pfn = %p!", hooks, pfn);
 
     return 0;
     }

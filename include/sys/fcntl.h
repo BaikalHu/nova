@@ -29,4 +29,4 @@
 
 #define O_ACCMODE               (O_RDONLY | O_WRONLY | O_RDWR)
 
-#endif  /* __FCNTL_H__ */
+#endif /* __FCNTL_H__ */

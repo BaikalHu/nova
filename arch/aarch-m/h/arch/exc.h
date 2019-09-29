@@ -63,5 +63,5 @@ typedef struct exc_info
 }
 #endif /* __cplusplus */
 
-#endif  /* __AARCH_M_EXC_H__ */
+#endif /* __AARCH_M_EXC_H__ */
 

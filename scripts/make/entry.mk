@@ -96,7 +96,7 @@ define dir-rule
         $$(info define rule for $(1))
     endif
     $(1) :
-		@mkdir -p $(1)
+	@mkdir -p $(1)
 endef
 
 $(foreach d,$(outdirs),$(eval $(call dir-rule,$(d))))
@@ -119,48 +119,35 @@ else
 # other IDE, like keil, segger ES
 ################################################################################
 
-ini             = bdf.ini
+ini             = .flags.ini
 
-ifdef CONFIG_KEIL
-ide             = keil
-endif
-
-ifdef CONFIG_SESA
-ide             = sesa
-endif
-
-text := "[global]\n"                                                            \
-        "flags = $(strip $(filter -D%, $(cflags-common) $(cflags-global)))\n"   \
-        "inc   = $(strip $(inc-global))\n"
-
-# src-$(dir) holds the filename with absolutely path
-
-ifdef CONFIG_USER_APP
-text += $(foreach f, $(foreach d,$(dirs),$(usr-$(d))),      \
-                     "[$(f)]\n"                             \
-                     "flags = $(strip $(cflags-$(f)))\n"    \
-                     "inc   = $(strip $(filter-out $(inc-global), $(inc-$(abspath $(f)))))\n")
-else
-text += $(foreach f, $(foreach d,$(dirs),$(src-$(d))),      \
-                     "[$(f)]\n"                             \
-                     "flags = $(strip $(cflags-$(f)))\n"    \
-                     "inc   = $(strip $(filter-out $(inc-global), $(inc-$(abspath $(f)))))\n")
-endif
-
-text := $(patsubst "\n ",,$(text))
+ide             = $(patsubst "%",%,$(CONFIG_IDE_NAME))
 
 # all, default, do nothing
 .PHONY : all
 all :
 	@echo "IDE support enabled, make has no effect. Please use the IDE project compile the project :-)"
 
+# src-$(dir) or usr-$(dir) holds the filename with absolutely path
+
+ifdef CONFIG_USER_APP
+dir-prefix = usr
+else
+dir-prefix = src
+endif
+
+$(ini) :
+	$(file >  $@,[global])
+	$(file >> $@,flags = $(strip $(filter -D%, $(cflags-common) $(cflags-global))))
+	$(file >> $@,inc   = $(strip $(inc-global)))
+	$(foreach f, $(foreach d,$(dirs),$($(dir-prefix)-$(d))),    \
+                     $(file >>$@,[$(f)])                            \
+                     $(file >>$@,flags = $(strip $(cflags-$(f))))   \
+                     $(file >>$@,inc   = $(strip $(filter-out $(inc-global), $(inc-$(abspath $(f)))))))
+
 .PHONY : gen-ide
-gen-ide:
-	@echo "parsing build flags ..."
-	@/bin/echo -e $(text) | sed 's/^ *//g' > $(ini)
-	@echo "creating project file ..."
-	@$(os_root)/scripts/ide-gen-$(ide)
-	@rm -rf $(ini)
+gen-ide: $(ini)
+	@python3 $(os_root)/scripts/ide-gen-$(ide) $<
 
 .PHONY : clean
 clean :
@@ -169,5 +156,5 @@ clean :
 endif
 
 syscall_stub.c :
-	@$(os_root)/scripts/$(arch)/syscall_gen $(os_root)/core/services/src/syscall.def
+	@python3 $(os_root)/scripts/$(arch)/syscall_gen $(os_root)/core/services/src/syscall.def
 

@@ -23,7 +23,7 @@
 #include <init.h>
 #include <defer.h>
 #include <symn2c.h>
-#include <bug.h>
+#include <warn.h>
 
 #include <lwip/netif.h>
 #include <lwip/etharp.h>
@@ -355,9 +355,8 @@ static int __stm32_eth_init (struct stm32_eth * eth, const char * name,
     {
     eth->irqn = irqn;
 
-    if (ethif_register (&eth->ethif, name, ops, mac) != 0)
+    if (unlikely (ethif_register (&eth->ethif, name, ops, mac) != 0))
         {
-        WARN ("ethif_register failed!");
         return -1;
         }
 
@@ -399,19 +398,16 @@ static int __low_level_start (struct ethif * ethif)
     if (hal_int_connect (eth->irqn, (hal_int_handler_t) __stm32_eth_handler,
                          (uintptr_t) eth) != 0)
         {
-        WARN ("Fail to connect in __low_level_start!");
         return -1;
         }
 
     if (hal_int_enable  (eth->irqn) != 0)
         {
-        WARN ("fail to enable irq in __low_level_start!");
         return -1;
         }
 
     if (hal_int_setprio (eth->irqn, 0))
         {
-        WARN ("fail to set irq priority in __low_level_start!");
         return -1;
         }
 
@@ -432,6 +428,8 @@ static int stm32_eth_init (void)
     int     ret;
     task_id task;
 
+    #if 1
+
     /* init network in task context to allow delay */
 
     if (current == NULL)
@@ -448,6 +446,9 @@ static int stm32_eth_init (void)
         return 0;
         }
 
+    #endif
+
+    // TODO: base etc
     ret = __stm32_eth_init (&stm32_eth1, "eth1", &__stm32_eth_ops,
                             CONFIG_STM32_ETH1_MAC, ETH_IRQn);
 
@@ -456,6 +457,16 @@ static int stm32_eth_init (void)
         WARN ("fail to init eth1!");
         return -1;
         }
+
+    ////
+    #if 0
+    if (ifconfig ("eth1", "up", "192.168.0.115", "255.255.255.0", "192.168.0.1") != 0)
+        {
+        WARN ("fail to config eth1!");
+        return -1;
+        }
+    #endif
+    ////
 
     return 0;
     }

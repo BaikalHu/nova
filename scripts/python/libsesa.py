@@ -152,7 +152,7 @@ def main ():
     kconf   = libconf.get_kconfig ()
 
     project = libconf.get_project ()
-    bdf_ini = libconf.get_bdf_ini ()
+    bdf_ini = libconf.get_bdf_ini (sys.argv [1], prjname + ".emProject")
 
     if not project:
         print ("project file not exist!")

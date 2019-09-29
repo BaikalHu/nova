@@ -45,4 +45,4 @@ extern int devfs_add_file (const char *, const struct devfs_ops *, uintptr_t);
 }
 #endif /* __cplusplus */
 
-#endif  /* __DEVFS_H__ */
+#endif /* __DEVFS_H__ */

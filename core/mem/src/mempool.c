@@ -18,7 +18,7 @@
 #include <mempool.h>
 #include <class.h>
 #include <init.h>
-#include <bug.h>
+#include <warn.h>
 
 #ifdef CONFIG_SYSCALL
 #include <syscall.h>
@@ -37,28 +37,24 @@ class_t mempool_class [1];
  * mempool_create - create a memory pool
  * @size:  the item size
  * @items: the number of items in the pool
- * @buff:  the memory used for the pool, if NULL use malloc
+ * @buff:  the memory used for the pool
  *
  * return: the created pool, NULL on error
  */
 
 mempool_id mempool_create (size_t size, size_t items, char * buff)
     {
-    if (unlikely (size == 0 || items == 0 || items >= UINT_MAX))
-        {
-        errno = ERRNO_MEMPOOL_ILLEGAL_PARA;
-        return NULL;
-        }
+    WARN_ON (size < sizeof (dlist_t) || (size & (sizeof (uintptr_t) - 1)) != 0,
+             errno = ERRNO_MEMPOOL_ILLEGAL_PARA; return NULL,
+             "Invalid item size!");
 
-    if (unlikely (size < sizeof (dlist_t)))
-        {
-        size = sizeof (dlist_t);
-        }
+    WARN_ON (items == 0 || items >= UINT_MAX,
+             errno = ERRNO_MEMPOOL_ILLEGAL_PARA; return NULL,
+             "Invalid number of items!");
 
-    if (unlikely (buff == NULL))
-        {
-        return NULL;
-        }
+    WARN_ON (buff == NULL,
+             errno = ERRNO_MEMPOOL_ILLEGAL_PARA; return NULL,
+             "Invalid buffer!");
 
     /*
      * obj is just the first member of mempool, so we can return this even when
@@ -78,11 +74,9 @@ mempool_id mempool_create (size_t size, size_t items, char * buff)
 
 int mempool_destroy (mempool_id pool)
     {
-    if (unlikely (pool == NULL))
-        {
-        errno = ERRNO_MEMPOOL_ILLEGAL_ID;
-        return -1;
-        }
+    WARN_ON (pool == NULL,
+             errno = ERRNO_MEMPOOL_ILLEGAL_ID; return -1,
+             "Invalid mempool id!");
 
     return obj_destroy (mempool_class, &pool->obj);
     }
@@ -98,11 +92,9 @@ char * mempool_alloc (mempool_id pool)
     {
     dlist_t * first;
 
-    if (unlikely (pool == NULL))
-        {
-        errno = ERRNO_MEMPOOL_ILLEGAL_POOL;
-        return NULL;
-        }
+    WARN_ON (pool == NULL,
+             errno = ERRNO_MEMPOOL_ILLEGAL_ID; return NULL,
+             "Invalid mempool id!");
 
     if (unlikely (obj_verify_protect (mempool_class, &pool->obj) != 0))
         {
@@ -143,11 +135,9 @@ char * mempool_alloc (mempool_id pool)
 
 int mempool_free (mempool_id pool, char * item)
     {
-    if (unlikely (pool == NULL))
-        {
-        errno = ERRNO_MEMPOOL_ILLEGAL_POOL;
-        return -1;
-        }
+    WARN_ON (pool == NULL,
+             errno = ERRNO_MEMPOOL_ILLEGAL_ID; return -1,
+             "Invalid mempool id!");
 
     if (unlikely (obj_verify_protect (mempool_class, &pool->obj) != 0))
         {
@@ -167,6 +157,8 @@ int mempool_free (mempool_id pool, char * item)
         mutex_unlock (&pool->lock);
         errno = ERRNO_MEMPOOL_ILLEGAL_OPERATION;
         obj_unprotect (&pool->obj);
+
+        WARN ("Trying to free invalid item!");
 
         return -1;
         }
@@ -213,10 +205,9 @@ static int __mempool_destroy (obj_id obj)
     {
     mempool_id pool = container_of (obj, mempool_t, obj);
 
-    if (unlikely (sem_getvalue (&pool->sem) != pool->nr_items))
-        {
-        return -1;
-        }
+    WARN_ON (sem_getvalue (&pool->sem) != pool->nr_items,
+             errno = ERRNO_MEMPOOL_BUSY; return -1,
+             "Trying to destroy a busy mempool!");
 
     if (unlikely (mutex_destroy (&pool->lock) != 0))
         {
@@ -239,7 +230,7 @@ static int mempool_lib_init (void)
     if (class_init (mempool_class, MID_MEMPOOL, sizeof (mempool_t),
                     __mempool_init, __mempool_destroy, NULL, NULL) != 0)
         {
-        WARN ("fail to initialize mempool_class!");
+        WARN ("Fail to initialize mempool_class!");
         return -1;
         }
 

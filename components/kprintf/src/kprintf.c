@@ -21,7 +21,7 @@
 #include <hal_uart.h>
 #include <critical.h>
 #include <init.h>
-#include <bug.h>
+#include <warn.h>
 
 #ifdef CONFIG_SYSCALL
 #include <syscall.h>
@@ -88,11 +88,7 @@ static int kprintf_lib_init (void)
     {
     __kprintf_uart = hal_uart_open (CONFIG_KPRINTF_UART_NAME);
 
-    if (__kprintf_uart == NULL)
-        {
-        WARN ("fail to open uart for kprintf!");
-        return -1;
-        }
+    WARN_ON (__kprintf_uart == NULL, return -1, "Fail to open uart for kprintf!");
 
     return 0;
     }

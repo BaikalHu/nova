@@ -50,4 +50,4 @@ extern int  profile_foreach    (void (*) (struct profile_data *, uintptr_t), uin
 }
 #endif /* __cplusplus */
 
-#endif  /* __PROFILE_H__ */
+#endif /* __PROFILE_H__ */

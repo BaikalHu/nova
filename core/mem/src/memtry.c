@@ -13,8 +13,10 @@
  * See the Mulan PSL v1 for more details.
  */
 
+#include <kconfig.h>
 #include <memtry.h>
 #include <errno.h>
+#include <warn.h>
 
 #ifdef CONFIG_SYSCALL
 #include <syscall.h>
@@ -35,11 +37,9 @@
 
 int mem_try (void * dst, void * src, int order)
     {
-    if (unlikely (order > MEMTRY_MAX_ORDER))
-        {
-        errno = ERRNO_MEMTRY_ILLEGAL_ORDER;
-        return -1;
-        }
+    WARN_ON (order > MEMTRY_MAX_ORDER,
+             errno = ERRNO_MEMTRY_ILLEGAL_ORDER; return -1,
+             "Invalid order!");
 
     errno = ERRNO_MEMTRY_NO_ACCESS;
 

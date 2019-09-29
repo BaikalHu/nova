@@ -47,4 +47,4 @@ struct syscall_table
 }
 #endif /* __cplusplus */
 
-#endif  /* __SYSCALL_H__ */
+#endif /* __SYSCALL_H__ */

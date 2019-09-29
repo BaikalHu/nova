@@ -17,6 +17,7 @@
 
 #include <compiler.h>
 #include <syscall.h>
+#include <warn.h>
 
 __weak const struct syscall_table syscall_table_task     = {0, NULL};
 __weak const struct syscall_table syscall_table_mutex    = {0, NULL};
@@ -87,6 +88,7 @@ uintptr_t syscall_get_entry (syscall_id sid)
 
     if (rid >= entry->nr_entries)
         {
+        WARN ("Invalid syscall id!");
         errno = ERRNO_SYSCALL_ILLEGAL_RID;
         return (uintptr_t) NULL;
         }

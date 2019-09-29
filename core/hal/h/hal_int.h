@@ -57,5 +57,5 @@ extern int  hal_int_register   (const hal_int_methods_t * methods);
 }
 #endif /* __cplusplus */
 
-#endif  /* __HAL_INTC___ */
+#endif /* __HAL_INTC___ */
 

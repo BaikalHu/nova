@@ -48,5 +48,5 @@ extern int page_pool_get  (page_pool_t * pool, uint32_t pages, uint32_t * pfn);
 }
 #endif /* __cplusplus */
 
-#endif  /* __PAGE_H__ */
+#endif /* __PAGE_H__ */
 

@@ -19,7 +19,7 @@
 #include <init.h>
 #include <irq.h>
 #include <errno.h>
-#include <kprintf.h>
+#include <defer.h>
 #include <warn.h>
 
 #include <arch/interface.h>
@@ -29,7 +29,28 @@
 extern int main (void);
 
 extern char __section_start__       (init_cpu)  [];
+extern char __section_start__       (init_user) [];
 extern char __section_end__         (init_user) [];
+
+static void __walk_init_table (init_pfn * start, init_pfn * end)
+    {
+    while (start != end)
+        {
+        if ((*start++) () != 0)
+            {
+            WARN ("Kernel initialization fail, last routine is %p, errno = %p\n",
+                  *start, errno);
+            }
+        }
+    }
+
+static void __usr_init (uintptr_t arg)
+    {
+    (void) arg;
+
+    __walk_init_table ((init_pfn *) __section_start__ (init_user),
+                       (init_pfn *) __section_end__   (init_user));
+    }
 
 /**
  * kernel_init - kernel initialization routine
@@ -39,18 +60,14 @@ extern char __section_end__         (init_user) [];
 
 __noreturn void kernel_init (void)
     {
-    init_pfn * init;
+    static deferred_job_t job = DEFERRED_JOB_INIT (__usr_init, 0);
 
-    for (init  = (init_pfn *) __section_start__ (init_cpu);
-         init != (init_pfn *) __section_end__   (init_user);
-         init++)
-        {
-        if ((*init) () != 0)
-            {
-            WARN ("Kernel initialization fail, last routine is %p, errno = %p\n",
-                  *init, errno);
-            }
-        }
+    __walk_init_table ((init_pfn *) __section_start__ (init_cpu),
+                       (init_pfn *) __section_start__ (init_user));
+
+    /* run user init routines in deferred task */
+
+    deferred_job_sched (&job);
 
     task_sched_start ();
 
@@ -63,12 +80,12 @@ __noreturn void kernel_init (void)
     }
 
 /**
- * user_init - user entry (main) task initialization routine
+ * main_init - main_init task initialization routine
  *
  * return: 0 on success, negtive value on error
  */
 
-static int user_init (void)
+static int main_init (void)
     {
     task_id tid;
 
@@ -80,4 +97,4 @@ static int user_init (void)
     return 0;
     }
 
-MODULE_INIT (user, user_init);
+MODULE_INIT (user, main_init);

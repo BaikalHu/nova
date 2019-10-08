@@ -13,8 +13,13 @@
  * See the Mulan PSL v1 for more details.
  */
 
+#include <kconfig.h>
+
 #include <irq.h>
+
+#ifdef CONFIG_KPRINTF
 #include <kprintf.h>
+#endif
 
 #include <arch/trace.h>
 
@@ -24,12 +29,14 @@ void __bug (const char * info)
     {
     (void) int_lock ();
 
+#ifdef CONFIG_KPRINTF
     /* if __bug beening invoked directly */
 
     if (info [0] != '\0')
         {
         kprintf ("BUG, \"%s\"\n", info);
         }
+#endif
 
     call_trace ();
 

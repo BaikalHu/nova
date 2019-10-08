@@ -84,8 +84,12 @@ SECTIONS
         KEEP (*(.init_board))
         KEEP (*(.init_prekernel))
         KEEP (*(.init_kernel))
+        KEEP (*(.init_postkernel))
+        KEEP (*(.init_hal))
         KEEP (*(.init_bus))
         KEEP (*(.init_driver))
+        KEEP (*(.init_postdriver))
+        __init_user_start__ = .;
         KEEP (*(.init_user))
         __init_user_end__   = .;
 

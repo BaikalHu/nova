@@ -584,5 +584,5 @@ static int hal_uart_init (void)
     return mutex_init (&__uarts_lock);
     }
 
-MODULE_INIT (bus, hal_uart_init);
+MODULE_INIT (hal, hal_uart_init);
 

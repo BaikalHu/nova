@@ -133,13 +133,16 @@ LR_IROM1 {rom_start} {rom_size}
         .ANY (+RO)
         }}
 
-    INIT_CPU       +0 ALIGN 4 {{ *.o (init_cpu) }}
-    INIT_BOARD     +0 ALIGN 4 {{ *.o (init_board) }}
-    INIT_PREKERNEL +0 ALIGN 4 {{ *.o (init_prekernel) }}
-    INIT_KERNEL    +0 ALIGN 4 {{ *.o (init_kernel) }}
-    INIT_BUS       +0 ALIGN 4 {{ *.o (init_bus) }}
-    INIT_DRIVER    +0 ALIGN 4 {{ *.o (init_driver) }}
-    INIT_USER      +0 ALIGN 4 {{ *.o (init_user) }}
+    INIT_CPU        +0 ALIGN 4 {{ *.o (init_cpu) }}
+    INIT_BOARD      +0 ALIGN 4 {{ *.o (init_board) }}
+    INIT_PREKERNEL  +0 ALIGN 4 {{ *.o (init_prekernel) }}
+    INIT_KERNEL     +0 ALIGN 4 {{ *.o (init_kernel) }}
+    INIT_POSTKERNEL +0 ALIGN 4 {{ *.o (init_postkernel) }}
+    INIT_HAL        +0 ALIGN 4 {{ *.o (init_hal) }}
+    INIT_BUS        +0 ALIGN 4 {{ *.o (init_bus) }}
+    INIT_DRIVER     +0 ALIGN 4 {{ *.o (init_driver) }}
+    INIT_POSTDRIVER +0 ALIGN 4 {{ *.o (init_postdriver) }}
+    INIT_USER       +0 ALIGN 4 {{ *.o (init_user) }}
 
     RW_IRAM1 {ram_start} {ram_size}
         {{
@@ -156,8 +159,11 @@ kept_sections = ["init_cpu",        \
                  "init_board",      \
                  "init_prekernel",  \
                  "init_kernel",     \
+                 "init_postkernel", \
+                 "init_hal",        \
                  "init_bus",        \
                  "init_driver",     \
+                 "init_postdriver", \
                  "init_user",       \
                  "cmder"]
 

@@ -182,6 +182,6 @@ static int svc_init (void)
     return 0;
     }
 
-MODULE_INIT (driver, svc_init);
+MODULE_INIT (postkernel, svc_init);
 
 #endif

@@ -96,16 +96,16 @@ static int uart_cmder_init (void)
     {
     hal_uart_t * uart;
 
-    static unsigned char his_content [256];
-    static unsigned char his_indexes [64];
+    static unsigned char his_content [CONFIG_CMDER_UART_HIS_CMD_BUFF_SIZE];
+    static unsigned char his_indexes [CONFIG_CMDER_UART_HIS_IDX_BUFF_SIZE];
 
     if (cmder != NULL)
         {
         return 0;
         }
 
-    ring_init (&uart_cmder.his_cmd, his_content, 256);
-    ring_init (&uart_cmder.his_idx, his_indexes, 64);
+    ring_init (&uart_cmder.his_cmd, his_content, CONFIG_CMDER_UART_HIS_CMD_BUFF_SIZE);
+    ring_init (&uart_cmder.his_idx, his_indexes, CONFIG_CMDER_UART_HIS_IDX_BUFF_SIZE);
 
     uart = hal_uart_open (CONFIG_CMDER_UART_NAME);
 
@@ -116,7 +116,7 @@ static int uart_cmder_init (void)
 
     uart_cmder.arg = (uintptr_t) uart;
 
-    cmder = task_spawn ("cmder", 1, TASK_OPTION_SYSTEM, 0x1000,
+    cmder = task_spawn ("cmder", 1, TASK_OPTION_SYSTEM, CONFIG_CMDER_UART_STACK_SIZE,
                         (int (*) (uintptr_t)) cmder_loop, (uintptr_t) &uart_cmder);
 
     WARN_ON (cmder == NULL, return -1, "Fail to create cmder task!");
@@ -124,5 +124,5 @@ static int uart_cmder_init (void)
     return 0;
     }
 
-MODULE_INIT (user, uart_cmder_init);
+MODULE_INIT (postdriver, uart_cmder_init);
 

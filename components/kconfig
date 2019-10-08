@@ -30,6 +30,21 @@ config CMDER_UART_NAME
     depends on CMDER_UART
     default "uart0"
 
+config CMDER_UART_HIS_CMD_BUFF_SIZE
+    int "the uart history commder buffer size"
+    depends on CMDER_UART
+    default 256
+
+config CMDER_UART_HIS_IDX_BUFF_SIZE
+    int "the uart history index buffer size"
+    depends on CMDER_UART
+    default 64
+
+config CMDER_UART_STACK_SIZE
+    hex "the uart cmder task stack size"
+    depends on CMDER_UART
+    default 0x1000
+
 config CMDER_TOP
     bool "Enable the command of \"top\"."
     depends on CMDER
@@ -69,6 +84,7 @@ config KPRINTF_UART_NAME
 config LWIP
     bool "Enable LWIP support."
     default n
+    select IPC_MQ
 
 orsource "*/kconfig"
 

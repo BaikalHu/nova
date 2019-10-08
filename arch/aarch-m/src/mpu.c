@@ -415,7 +415,7 @@ static int mpu_init (void)
     return 0;
     }
 
-MODULE_INIT (driver, mpu_init);
+MODULE_INIT (postkernel, mpu_init);
 
 static const uintptr_t syscall_entries_mpu [] =
     {

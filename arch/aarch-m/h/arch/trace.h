@@ -16,23 +16,23 @@
 #ifndef __AARCH_M_TRACE_H__
 #define __AARCH_M_TRACE_H__
 
-#include "exc.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
 /* defines */
 
-#define NR_MAX_LOOPS        (128)
-#define NR_STACK_CONTENTS   (8)
-
 /* typedefs */
 
 /* externs */
 
+#ifdef CONFIG_TRACE
 extern void back_trace (uint32_t, uint32_t, uint32_t);
 extern void call_trace (void);
+#else
+#define back_trace(...)
+#define call_trace(...)
+#endif
 
 #ifdef __cplusplus
 }

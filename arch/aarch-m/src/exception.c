@@ -16,7 +16,6 @@
 #include <config.h>
 #include <defer.h>
 #include <task.h>
-#include <kprintf.h>
 #include <bug.h>
 #include <critical.h>
 #include <memtry.h>
@@ -25,16 +24,19 @@
 #include <arch/spr.h>
 #include <arch/trace.h>
 
+#ifdef CONFIG_KPRINTF
+#include <kprintf.h>
+#endif
+
 extern char mem_try_arch [];
 extern char mem_try_arch_end [];
 
-static void __exc_task_delete (struct deferred_job * job)
+static void __exc_task_delete (uintptr_t arg)
     {
-    task_id task = container_of (job, task_t, job);
-
-    (void) task_delete (task);
+    (void) task_delete ((task_id) arg);
     }
 
+#ifdef CONFIG_TRACE
 /*
  * exc_trace - show the stack trace info for an exception
  * exc_info: the exception information struct
@@ -53,14 +55,13 @@ static void exc_trace (exc_info_t * exc_info)
 
     back_trace (sp, exc_info->esp->lr, exc_info->esp->pc);
     }
+#endif
 
 void arch_exc_handler (exc_info_t * context)
     {
-    uint32_t         pc = context->esp->pc;
-    deferred_job_t * job;
-    uint32_t       * sp = (uint32_t *) (context->esp + 1);
-#ifdef CONFIG_AARCH_M_MAINLINE
-    const char     * actived;
+    uint32_t     pc = context->esp->pc;
+#if defined (CONFIG_KPRINTF) && defined (CONFIG_AARCH_M_MAINLINE)
+    const char * actived;
 #endif
 
 #ifdef CONFIG_AARCH_M_MAINLINE
@@ -110,6 +111,7 @@ void arch_exc_handler (exc_info_t * context)
         return;
         }
 
+#ifdef CONFIG_KPRINTF
     kprintf ("\nencountered exception, the exception context:\n");
     kprintf ("r0  = %p    r1  = %p\n", context->esp->r0, context->esp->r1);
     kprintf ("r2  = %p    r3  = %p\n", context->esp->r2, context->esp->r3);
@@ -117,7 +119,7 @@ void arch_exc_handler (exc_info_t * context)
     kprintf ("r6  = %p    r7  = %p\n", context->r6,      context->r7);
     kprintf ("r8  = %p    r9  = %p\n", context->r8,      context->r9);
     kprintf ("r10 = %p    r11 = %p\n", context->r10,     context->r11);
-    kprintf ("r12 = %p    sp  = %p\n", context->esp->ip, sp);
+    kprintf ("r12 = %p    sp  = %p\n", context->esp->ip, context->esp + 1);
     kprintf ("lr  = %p    pc  = %p\n", context->esp->lr, context->esp->pc);
 
 #ifdef CONFIG_AARCH_M_MAINLINE
@@ -154,7 +156,8 @@ void arch_exc_handler (exc_info_t * context)
     kprintf ("dfsr  = %p\n", context->dfsr);
     kprintf ("mmfar = %p\n", context->mmfar);
     kprintf ("bfar  = %p\n", context->bfar);
-#endif
+#endif /* CONFIG_AARCH_M_MAINLINE */
+#endif /* CONFIG_KPRINTF */
 
     // TODO: hook, signal
 
@@ -164,6 +167,7 @@ void arch_exc_handler (exc_info_t * context)
 
     BUG_ON (task_suspend (current) != 0, "Kernel task crash!");
 
+#ifdef CONFIG_TRACE
 #ifdef CONFIG_AARCH_M_MAINLINE
 
     /* prevent mem_try in hardfault cause lockup in back_trace */
@@ -176,13 +180,14 @@ void arch_exc_handler (exc_info_t * context)
 #else
     exc_trace (context);
 #endif
+#endif
 
+#ifdef CONFIG_KPRINTF
     kprintf ("task \"%s\" deleted!\n\n", current->name);
+#endif
 
-    job = &current->job;
+    deferred_job_init (&current->job, __exc_task_delete, (uintptr_t) current);
 
-    job->job = __exc_task_delete;
-
-    do_deferred (job);
+    deferred_job_sched (&current->job);
     }
 

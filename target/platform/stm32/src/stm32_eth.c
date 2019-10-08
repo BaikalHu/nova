@@ -21,7 +21,6 @@
 #include <hal_uart.h>
 #include <hal_int.h>
 #include <init.h>
-#include <defer.h>
 #include <symn2c.h>
 #include <warn.h>
 
@@ -425,51 +424,15 @@ static struct netif_ops __stm32_eth_ops =
 
 static int stm32_eth_init (void)
     {
-    int     ret;
-    task_id task;
-
-    #if 1
-
-    /* init network in task context to allow delay */
-
-    if (current == NULL)
-        {
-        task = task_spawn ("net_init", 2, 0, 0x1000,
-                           (int (*) (uintptr_t)) stm32_eth_init, 0);
-
-        if (task == NULL)
-            {
-            WARN ("fail to create net_init task!");
-            return -1;
-            }
-
-        return 0;
-        }
-
-    #endif
-
-    // TODO: base etc
-    ret = __stm32_eth_init (&stm32_eth1, "eth1", &__stm32_eth_ops,
-                            CONFIG_STM32_ETH1_MAC, ETH_IRQn);
-
-    if (ret != 0)
-        {
-        WARN ("fail to init eth1!");
-        return -1;
-        }
-
-    ////
-    #if 0
-    if (ifconfig ("eth1", "up", "192.168.0.115", "255.255.255.0", "192.168.0.1") != 0)
-        {
-        WARN ("fail to config eth1!");
-        return -1;
-        }
-    #endif
-    ////
+    WARN_ON (__stm32_eth_init (&stm32_eth1, "eth1", &__stm32_eth_ops,
+                               CONFIG_STM32_ETH1_MAC, ETH_IRQn) != 0,
+             return -1,
+             "Fail to init %s!", "eth1");
 
     return 0;
     }
 
-MODULE_INIT (driver, stm32_eth_init);
+/* there are task_delay in the initialization routine, so do it in user phase for now */
+
+MODULE_INIT (user, stm32_eth_init);
 

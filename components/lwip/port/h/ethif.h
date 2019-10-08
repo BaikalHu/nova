@@ -47,26 +47,51 @@ struct ethif
 
     mutex_t          lock;
 
+#ifdef CONFIG_CMDER
     uint64_t         tx_pkts;
     uint64_t         tx_size;
     uint64_t         rx_pkts;
     uint64_t         rx_size;
     uint64_t         rx_drop;
+#endif
 
     struct netif_ops * ops;
     };
 
 /* inlines */
 
-static inline void ethif_rx_size_update (struct ethif * ethif, uint32_t len)
+#ifdef CONFIG_CMDER
+static inline void ethif_tx_pkts_update (struct ethif * ethif)
     {
-    ethif->rx_size += len;
+    ethif->tx_pkts++;
     }
 
 static inline void ethif_tx_size_update (struct ethif * ethif, uint32_t len)
     {
     ethif->tx_size += len;
     }
+
+static inline void ethif_rx_pkts_update (struct ethif * ethif)
+    {
+    ethif->rx_pkts++;
+    }
+
+static inline void ethif_rx_size_update (struct ethif * ethif, uint32_t len)
+    {
+    ethif->rx_size += len;
+    }
+
+static inline void ethif_rx_drop_update (struct ethif * ethif)
+    {
+    ethif->rx_drop++;
+    }
+#else
+#define ethif_tx_pkts_update(...)
+#define ethif_tx_size_update(...)
+#define ethif_rx_pkts_update(...)
+#define ethif_rx_size_update(...)
+#define ethif_rx_drop_update(...)
+#endif
 
 /* externs */
 

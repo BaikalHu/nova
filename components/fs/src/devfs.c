@@ -335,5 +335,5 @@ static int devfs_init (void)
     return vfs_mount ("devfs", "/dev/");
     }
 
-MODULE_INIT (bus, devfs_init);
+MODULE_INIT (postkernel, devfs_init);
 

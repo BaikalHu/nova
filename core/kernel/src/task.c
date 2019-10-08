@@ -430,25 +430,6 @@ bool task_stack_overflow (task_id task)
     return *((uint64_t *) task->stack_base) != TASK_STACK_MAGIC;
     }
 
-static void __task_delete_clean (struct deferred_job * job)
-    {
-    task_id task = container_of (job, task_t, job);
-
-#ifdef CONFIG_TASK_DELETE_HOOK
-    __walk_delete_hook (task);
-#endif
-
-    if ((task->option & TASK_OPTION_STATIC_STACK) == 0)
-        {
-        free (task->stack_base);
-        }
-
-    if ((task->option & TASK_OPTION_STATIC_TCB) == 0)
-        {
-        free (task);
-        }
-    }
-
 static inline int __verify_context (task_id task)
     {
     WARN_ON (!__task_lib_inited (),
@@ -566,8 +547,6 @@ static int __task_resume (uintptr_t arg1, uintptr_t arg2)
         {
         __regset_set_rv (&task->regset, -1);
         }
-
-    task->status &= ~TASK_STATUS_SUSPEND;
 
     if (task != idle)
         {
@@ -903,7 +882,7 @@ void task_lock (void)
 
 void task_unlock (void)
     {
-    if (unlikely (current == NULL || task_lock_cnt == 0))
+    if (unlikely (current == NULL || int_context () || task_lock_cnt == 0))
         {
         return;
         }
@@ -953,10 +932,14 @@ static inline void __ready_q_put (struct task * task, bool head)
         task->status &= ~TASK_STATUS_DELAY;
         }
 
+    task->status = TASK_STATUS_READY;
+
+#if 0
     if (unlikely (task->status != TASK_STATUS_READY))
         {
         return;
         }
+#endif
 
     if ((ready_q.highest == idle) || (prio < ready_q.highest->c_prio))
         {
@@ -987,10 +970,7 @@ static inline void __ready_q_put (struct task * task, bool head)
 
 void task_ready_q_add (struct task * task)
     {
-    if (unlikely (!in_critical ()))
-        {
-        return;
-        }
+    BUG_ON (!in_critical (), "Invalid operation1");
 
     __ready_q_put (task, false);
     }
@@ -1308,6 +1288,21 @@ static int __task_init (obj_id obj, va_list valist)
     return 0;
     }
 
+static void __task_delete_clean (uintptr_t arg)
+    {
+    task_id task = (task_id) arg;
+
+    if ((task->option & TASK_OPTION_STATIC_STACK) == 0)
+        {
+        free (task->stack_base);
+        }
+
+    if ((task->option & TASK_OPTION_STATIC_TCB) == 0)
+        {
+        free (task);
+        }
+    }
+
 static int __task_destroy_critical (uintptr_t arg1, uintptr_t arg2)
     {
     task_id   task = (task_id) arg1;
@@ -1318,17 +1313,19 @@ static int __task_destroy_critical (uintptr_t arg1, uintptr_t arg2)
 
     task_ready_q_del (current);
 
-    /* just use the memory at the end of tcb as the space is useless now */
+    deferred_job_init (&task->job, __task_delete_clean, (uintptr_t) task);
 
-    task->job.job   = __task_delete_clean;
-
-    do_deferred (&task->job);
+    deferred_job_sched (&task->job);
 
     return 0;
     }
 
 static int __task_destroy (obj_id obj)
     {
+
+#ifdef CONFIG_TASK_DELETE_HOOK
+    __walk_delete_hook (container_of (obj, task_t, obj));
+#endif
 
     /*
      * this routine is always invoked under task context, and will never return

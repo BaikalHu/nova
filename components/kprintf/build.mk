@@ -1,3 +1,2 @@
-src-prefix              := src/
-src-$(CONFIG_KPRINTF)   += kprintf.c
+src-$(CONFIG_KPRINTF)   += src/kprintf.c
 inc-g-$(CONFIG_KPRINTF) += h/

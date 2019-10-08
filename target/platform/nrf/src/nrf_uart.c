@@ -103,9 +103,9 @@ static struct
     volatile uint32_t pin_cnf [32];
     } * const nrf_gpio = (void *) 0x50000000;
 
-static void __nrf_handler (struct deferred_job * job)
+static void __nrf_handler (uintptr_t arg)
     {
-    struct nrf_uart        * nrf_uart = container_of (job, struct nrf_uart, job);
+    struct nrf_uart        * nrf_uart = (struct nrf_uart *) arg;
     struct nrf_uart_regset * regset   = nrf_uart->regset;
     hal_uart_t             * uart     = &nrf_uart->hal_uart;
 
@@ -139,7 +139,7 @@ static void nrf_uart_handler (uintptr_t arg)
     struct nrf_uart        * nrf_uart = (struct nrf_uart *) arg;
     struct nrf_uart_regset * regset   = nrf_uart->regset;
 
-    do_deferred (&nrf_uart->job);
+    deferred_job_sched (&nrf_uart->job);
 
     regset->intenclr = INTENT_RXDRDY | INTENT_TXDRDY;
     }
@@ -229,7 +229,7 @@ static int __nrf_uart_init (struct nrf_uart * nrf_uart, uintptr_t base,
 
     nrf_uart->regset      =  regset;
 
-    nrf_uart->job.job     = __nrf_handler;
+    deferred_job_init (&nrf_uart->job, __nrf_handler, (uintptr_t) nrf_uart);
 
     if (hal_int_connect (irqn, nrf_uart_handler, (uintptr_t) nrf_uart))
         {

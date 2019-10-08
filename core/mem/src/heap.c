@@ -127,6 +127,22 @@ heap_id heap_create (void)
     return container_of (obj_create (heap_class), heap_t, obj);
     }
 
+/**
+ * heap_destroy - destroy a heap
+ * @sem: the semaphore to be destroied
+ *
+ * return: 0 on success, negtive value on error
+ */
+
+int heap_destroy (heap_t * heap)
+    {
+    WARN_ON (heap == NULL,
+             errno = ERRNO_HEAP_ILLEGAL_ID; return -1,
+             "Invalid heap id!");
+
+    return obj_destroy (heap_class, &heap->obj);
+    }
+
 static int __heap_add (heap_t * heap, char * buff, size_t size)
     {
     block_t * cb;

@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) [2019] Huawei Technologies Co.,Ltd.All rights reserved.
+ *
+ * LiteOS NOVA is licensed under the Mulan PSL v1.
+ * You can use this software according to the terms and conditions of the Mulan PSL v1.
+ * You may obtain a copy of Mulan PSL v1 at:
+ *
+ * 	http://license.coscl.org.cn/MulanPSL
+ *
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR
+ * FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v1 for more details.
+ */
+
 #include <lwip/debug.h>
 #include <lwip/def.h>
 #include <lwip/sys.h>
@@ -34,12 +49,12 @@ void sys_init (void)
 
 u32_t sys_now (void)
     {
-    return tick_tsc () * CONFIG_SYS_TICK_HZ;
+    return tick_count_get () * CONFIG_SYS_TICK_HZ;
     }
 
 u32_t sys_jiffies (void)
     {
-    return tick_tsc ();
+    return tick_count_get ();
     }
 
 sys_prot_t sys_arch_protect (void)
@@ -335,4 +350,4 @@ static int lwip_lib_init (void)
     return 0;
     }
 
-MODULE_INIT (bus, lwip_lib_init);
+MODULE_INIT (postkernel, lwip_lib_init);

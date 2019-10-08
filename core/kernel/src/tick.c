@@ -698,7 +698,7 @@ static int tick_lib_init (void)
  * tick init depends on driver, so init tick module at user group
  */
 
-MODULE_INIT (user, tick_lib_init);
+MODULE_INIT (postdriver, tick_lib_init);
 
 #ifdef CONFIG_CMDER
 

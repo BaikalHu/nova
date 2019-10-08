@@ -90,12 +90,12 @@ static __noreturn void __ethif_input_task (void)
                 LWIP_DEBUGF (NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
                 pbuf_free (buf);
 
-                ethif->rx_drop++;
+                ethif_rx_drop_update (ethif);
 
                 break;
                 }
 
-            ethif->rx_pkts++;
+            ethif_rx_pkts_update (ethif);
             }
         }
     }
@@ -230,7 +230,7 @@ static int8_t __ethif_output (struct netif * netif, struct pbuf * p)
     {
     struct ethif * ethif = container_of (netif, struct ethif, netif);
 
-    ethif->tx_pkts++;
+    ethif_tx_pkts_update (ethif);
 
     return ethif->ops->output (ethif, p);
     }

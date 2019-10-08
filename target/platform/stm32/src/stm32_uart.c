@@ -56,9 +56,9 @@ static struct stm32_uart stm32_uart3;
 static struct stm32_uart stm32_lpuart1;
 #endif
 
-static void __stm32_deferred_rx (struct deferred_job * job)
+static void __stm32_deferred_rx (uintptr_t arg)
     {
-    struct stm32_uart  * uart   = container_of (job, struct stm32_uart, rxjob);
+    struct stm32_uart  * uart   = (struct stm32_uart *) arg;
     UART_HandleTypeDef * handle = &uart->handle;
 
     while (__HAL_UART_GET_FLAG (handle, UART_FLAG_RXNE) != RESET)
@@ -77,9 +77,9 @@ static void __stm32_deferred_rx (struct deferred_job * job)
     __HAL_UART_ENABLE_IT (handle, UART_IT_RXNE);
     }
 
-static void __stm32_deferred_tx (struct deferred_job * job)
+static void __stm32_deferred_tx (uintptr_t arg)
     {
-    struct stm32_uart  * uart   = container_of (job, struct stm32_uart, txjob);
+    struct stm32_uart  * uart   = (struct stm32_uart *) arg;
     UART_HandleTypeDef * handle = &uart->handle;
 
     while (__HAL_UART_GET_FLAG (handle, UART_FLAG_TXE)  != RESET)
@@ -109,13 +109,13 @@ static void __stm32_uart_handler (uintptr_t arg)
     if (__HAL_UART_GET_IT_SOURCE (&uart->handle, UART_IT_RXNE) != RESET)
         {
         __HAL_UART_DISABLE_IT (&uart->handle, UART_IT_RXNE);
-        do_deferred (&uart->rxjob);
+        deferred_job_sched (&uart->rxjob);
         }
 
     if (__HAL_UART_GET_IT_SOURCE (&uart->handle, UART_IT_TXE)  != RESET)
         {
         __HAL_UART_DISABLE_IT (&uart->handle, UART_IT_TXE);
-        do_deferred (&uart->txjob);
+        deferred_job_sched (&uart->txjob);
         }
     }
 
@@ -210,8 +210,8 @@ static int __stm32_uart_init (struct stm32_uart * uart,
     UART_HandleTypeDef * handle   = &uart->handle;
     hal_uart_t         * hal_uart = &uart->hal_uart;
 
-    uart->rxjob.job = __stm32_deferred_rx;
-    uart->txjob.job = __stm32_deferred_tx;
+    deferred_job_init (&uart->rxjob, __stm32_deferred_rx, (uintptr_t) uart);
+    deferred_job_init (&uart->txjob, __stm32_deferred_tx, (uintptr_t) uart);
 
     if (hal_int_connect (irqn, __stm32_uart_handler, (uintptr_t) uart))
         {

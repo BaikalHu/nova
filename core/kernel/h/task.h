@@ -40,7 +40,7 @@ extern "C" {
 
 /* defines */
 
-#define MAX_TASK_NAME_LEN               sizeof (deferred_job_t)
+#define MAX_TASK_NAME_LEN               12
 
 #define TASK_STATUS_READY               0u
 #define TASK_STATUS_SUSPEND             1u
@@ -103,8 +103,8 @@ typedef struct task
 
     union
         {
-        dlist_t            rq_node;
-        struct tick_q_node tq_node;
+        dlist_t            rq_node;     /* ready queue node */
+        struct tick_q_node tq_node;     /* tick queue node */
         };
 
     dlist_t                pq_node;

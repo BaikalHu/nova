@@ -93,7 +93,7 @@ static int kprintf_lib_init (void)
     return 0;
     }
 
-MODULE_INIT (user, kprintf_lib_init);
+MODULE_INIT (postdriver, kprintf_lib_init);
 
 #ifdef CONFIG_SYSCALL
 static const uintptr_t syscall_entries_kprintf [] =

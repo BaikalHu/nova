@@ -218,7 +218,6 @@ static const hal_timer_methods_t rtc_methods =
 
 static int __nrf_rtc_init (struct nrf_rtc * nrf_rtc, uintptr_t base, unsigned int irqn)
     {
-    int                     ret;
     static uint8_t          unit = 0;
 
     struct nrf_rtc_regset * regset    = (struct nrf_rtc_regset *) base;

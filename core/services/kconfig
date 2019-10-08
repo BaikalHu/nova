@@ -13,31 +13,6 @@
 # See the Mulan PSL v1 for more details.
 #
 
-choice
-    prompt "Please select the number of slots in deferred isr job."
-    default NR_DEFERRED_IRQ_JOB_SLOTS_32
-config NR_DEFERRED_IRQ_JOB_SLOTS_16
-    bool "16"
-config NR_DEFERRED_IRQ_JOB_SLOTS_32
-    bool "32"
-config NR_DEFERRED_IRQ_JOB_SLOTS_64
-    bool "64"
-endchoice
-
-config NR_DEFERRED_IRQ_JOB_SLOTS
-    int
-    default 16 if NR_DEFERRED_IRQ_JOB_SLOTS_16
-    default 32 if NR_DEFERRED_IRQ_JOB_SLOTS_32
-    default 64 if NR_DEFERRED_IRQ_JOB_SLOTS_64
-
-config DEFERRED_STACK_SIZE
-    hex "The stack size of the deferred task."
-    default 0x800
-
-config DEFERRED_NAME
-    string "The task name of the deferred task."
-    default "defer"
-
 config SYSCALL
     def_bool n
 

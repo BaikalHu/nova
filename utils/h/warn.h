@@ -17,7 +17,10 @@
 #define __WARN_H__
 
 #include <kconfig.h>
+
+#ifdef CONFIG_DEBUG     // DEBUG select KPRINTF
 #include <kprintf.h>
+#endif
 
 #include <arch/trace.h>
 

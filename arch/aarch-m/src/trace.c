@@ -119,6 +119,10 @@ and simulate the following special instructions:
 #include <arch/exc.h>
 #include <arch/trace.h>
 
+/* macros */
+
+#define NR_MAX_LOOPS        (128)
+
 /* typedefs */
 
 struct trace_ctx

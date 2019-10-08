@@ -129,6 +129,11 @@ config WFI
     default y if TICKLESS
     default n
 
+config TRACE
+    bool "Enable trace support."
+    depends on KPRINTF
+    default y
+
 # tools supported by aarch-m
 
 config GNUC

@@ -1,5 +1,8 @@
 #include <config.h>
+
+#ifdef CONFIG_KPRINTF
 #include <kprintf.h>
+#endif
 
 int main (void)
     {
@@ -23,7 +26,9 @@ int main (void)
      * return, and this task will be terminated
      */
 
+#ifdef CONFIG_KPRINTF
     kprintf ("hello world :-)\n");
+#endif
 
     return 0;
     }

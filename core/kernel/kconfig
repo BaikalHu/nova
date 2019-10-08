@@ -205,4 +205,16 @@ config SOFT_TIMER
     bool "Enable the software timer support."
     default y
 
+#
+# deferred job settings
+#
+
+config DEFERRED_STACK_SIZE
+    hex "The stack size of the deferred task."
+    default 0x800
+
+config DEFERRED_NAME
+    string "The task name of the deferred task."
+    default "defer"
+
 endmenu

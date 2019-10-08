@@ -295,6 +295,12 @@ hal_i2c_dev_t * hal_i2c_dev_open (const char * name)
         if (strcmp (name, dev->name) == 0)
             {
             mutex_unlock (&__dev_lock);
+
+            if ((dev->init != NULL) && (dev->init (dev) != 0))
+                {
+                return NULL;
+                }
+
             return dev;
             }
         }
@@ -367,9 +373,5 @@ static int hal_i2c_init (void)
     return 0;
     }
 
-/*
- * must be initialized before bus group, so add it in the group of kernel
- */
-
-MODULE_INIT (kernel, hal_i2c_init);
+MODULE_INIT (hal, hal_i2c_init);
 

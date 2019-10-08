@@ -13,4 +13,12 @@
  * See the Mulan PSL v1 for more details.
  */
 
-// empty for now
+#include <init.h>
+
+static int board_init (void)
+    {
+    return 0;
+    }
+
+MODULE_INIT (board, board_init);
+

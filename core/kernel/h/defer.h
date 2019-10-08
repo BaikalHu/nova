@@ -27,34 +27,35 @@ extern "C" {
 
 /* macros */
 
-#define DEFERRED_IRQ_JOB_SLOTS              (CONFIG_NR_DEFERRED_IRQ_JOB_SLOTS)
-#define DEFERRED_IRQ_JOB_MASK               (DEFERRED_IRQ_JOB_SLOTS - 1)
+#define ERRNO_DEFERRED_ILLEGAL_JOB          ERRNO_JOIN (MID_DEFER, 1)
+#define ERRNO_DEFERRED_ILLEGAL_PFN          ERRNO_JOIN (MID_DEFER, 2)
 
-#define ERRNO_DEFERRED_QUEUE_FULL           ERRNO_JOIN (MID_DEFER, 1)
-#define ERRNO_DEFERRED_ILLEGAL_JOB          ERRNO_JOIN (MID_DEFER, 2)
-#define ERRNO_DEFERRED_ILLEGAL_OPERATION    ERRNO_JOIN (MID_DEFER, 3)
+/**
+ * DEFERRED_JOB_INIT - create a initialized deferred job body
+ */
+
+#define DEFERRED_JOB_INIT(pfn, arg)         \
+    {                                       \
+    NULL,                                   \
+    (void  (*) (uintptr_t)) pfn,            \
+    (uintptr_t) arg,                        \
+    { 0 }                                   \
+    }
 
 /* typedefs */
 
 typedef struct deferred_job
     {
-    dlist_t               node;
-    void               (* job) (struct deferred_job *);
+    struct deferred_job * next;
+    void               (* pfn) (uintptr_t);
+    uintptr_t             arg;
     atomic_uint           busy;
     } deferred_job_t;
 
-struct deferred_isr_q
-    {
-    volatile unsigned int head_idx;
-    volatile unsigned int tail_idx;
-    deferred_job_t      * jobs [DEFERRED_IRQ_JOB_SLOTS];
-    };
-
 /* externs */
 
-extern struct deferred_isr_q  deferred_isr_q;
-
-extern int do_deferred (deferred_job_t *);
+extern int deferred_job_sched (deferred_job_t *);
+extern int deferred_job_init  (deferred_job_t *, void (*) (uintptr_t), uintptr_t);
 
 #ifdef __cplusplus
 }

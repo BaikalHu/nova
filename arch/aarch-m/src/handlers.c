@@ -17,7 +17,6 @@
 #include <compiler.h>
 #include <task.h>
 #include <irq.h>
-#include <kprintf.h>
 #include <init.h>
 
 #ifdef CONFIG_PROFILE

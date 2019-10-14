@@ -216,18 +216,15 @@ static const hal_timer_methods_t rtc_methods =
     .period        = rtc_period
     };
 
-static int __nrf_rtc_init (struct nrf_rtc * nrf_rtc, uintptr_t base, unsigned int irqn)
+static int __nrf_rtc_init (struct nrf_rtc * nrf_rtc, uintptr_t base,
+                           unsigned int irqn, const char * name)
     {
-    static uint8_t          unit = 0;
-
     struct nrf_rtc_regset * regset    = (struct nrf_rtc_regset *) base;
     hal_timer_t           * hal_timer = &nrf_rtc->hal_timer;
 
     regset->prescaler    = 0;
 
-    hal_timer->name      = "rtc";
-    hal_timer->unit      = unit++;
-    hal_timer->busy      = 0;
+    hal_timer->name      = name;
     hal_timer->freq      = 32768;
     hal_timer->max_count = NRF_RTC_MAX_COUNT;
     hal_timer->methods   = &rtc_methods;
@@ -257,7 +254,7 @@ static int nrf_rtc_init (void)
 
 #ifdef CONFIG_NRF_RTC0
     ret = __nrf_rtc_init (&nrf_rtc0, CONFIG_NRF_RTC0_REGBASE,
-                          CONFIG_NRF_RTC0_IRQN);
+                          CONFIG_NRF_RTC0_IRQN, "rtc0");
 
     if (ret != 0)
         {
@@ -267,7 +264,7 @@ static int nrf_rtc_init (void)
 
 #ifdef CONFIG_NRF_RTC1
     ret = __nrf_rtc_init (&nrf_rtc1, CONFIG_NRF_RTC1_REGBASE,
-                          CONFIG_NRF_RTC1_IRQN);
+                          CONFIG_NRF_RTC1_IRQN, "rtc1");
 
     if (ret != 0)
         {

@@ -16,8 +16,14 @@
 #ifndef __ETHIF_H__
 #define __ETHIF_H__
 
+#include <stdint.h>
+
 #include <lwip/err.h>
 #include <lwip/netif.h>
+
+#include <defer.h>
+#include <mutex.h>
+#include <list.h>
 
 #define NETIF_MTU                       (1500)
 
@@ -46,6 +52,8 @@ struct ethif
     const char     * mac;
 
     mutex_t          lock;
+
+    deferred_job_t   job;
 
 #ifdef CONFIG_CMDER
     uint64_t         tx_pkts;

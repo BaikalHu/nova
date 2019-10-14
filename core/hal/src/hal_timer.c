@@ -181,6 +181,8 @@ int hal_timer_register (hal_timer_t * timer)
     BUG_ON (timer->methods->counter == NULL, "Invalid timer methods!");
     BUG_ON (timer->methods->period  == NULL, "Invalid timer methods!");
 
+    timer->busy = false;
+
     dlist_add_tail (&hal_timers, &timer->node);
 
     return 0;

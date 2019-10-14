@@ -36,7 +36,6 @@
 
 /* locals */
 
-static mq_id   __input_netif_mq;
 static dlist_t __ethifs = DLIST_INIT (__ethifs);
 static mutex_t __ethifs_lock;
 
@@ -65,38 +64,26 @@ static struct ethif * __get_ethif (const char * name)
     return NULL;
     }
 
-static __noreturn void __ethif_input_task (void)
+static void __ethif_input (uintptr_t arg)
     {
-    struct ethif     * ethif;
-    struct netif     * netif;
-    struct netif_ops * ops;
+    struct ethif     * ethif = (struct ethif *) arg;
+    struct netif     * netif = &ethif->netif;
+    struct netif_ops * ops   = (struct netif_ops *) ethif->ops;
     struct pbuf      * buf;
 
-    while (1)
+    while ((buf = ops->input (ethif)) != NULL)
         {
-        if (mq_recv (__input_netif_mq, (void *) &ethif, sizeof (void *)) != 0)
+        if (netif->input (buf, netif) != ERR_OK)
             {
-            continue;
+            LWIP_DEBUGF (NETIF_DEBUG, ("__ethif_input: IP input error\n"));
+            pbuf_free (buf);
+
+            ethif_rx_drop_update (ethif);
+
+            break;
             }
 
-        ops   = (struct netif_ops *) ethif->ops;
-
-        netif = &ethif->netif;
-
-        while ((buf = ops->input (ethif)) != NULL)
-            {
-            if (netif->input (buf, netif) != ERR_OK)
-                {
-                LWIP_DEBUGF (NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
-                pbuf_free (buf);
-
-                ethif_rx_drop_update (ethif);
-
-                break;
-                }
-
-            ethif_rx_pkts_update (ethif);
-            }
+        ethif_rx_pkts_update (ethif);
         }
     }
 
@@ -109,7 +96,7 @@ static __noreturn void __ethif_input_task (void)
 
 void ethif_rx (struct ethif * ethif)
     {
-    (void) mq_trysend (__input_netif_mq, (void *) &ethif, sizeof (void *));
+    deferred_job_sched (&ethif->job);
     }
 
 static void __arp_timer (void * arg)
@@ -383,6 +370,11 @@ int ethif_register (struct ethif * ethif, const char * name, struct netif_ops * 
         return -1;
         }
 
+    if (unlikely (deferred_job_init (&ethif->job, __ethif_input, (uintptr_t) ethif) != 0))
+        {
+        return -1;
+        }
+
     if (unlikely (mutex_init (&ethif->lock) != 0))
         {
         return -1;
@@ -571,19 +563,6 @@ CMDER_CMD_DEF ("ifconfig", "view and change the configuration of the network int
 
 static int ethif_lib_init (void)
     {
-    WARN_ON (task_spawn (CONFIG_ETHIF_TASK_NAME, CONFIG_ETHIF_TASK_PRIO, 0,
-                         CONFIG_ETHIF_TASK_STACK_SIZE,
-                         (int (*) (uintptr_t)) __ethif_input_task, 0) == NULL,
-             return -1,
-             "Fail to create ethif task!");
-
-    __input_netif_mq = mq_create (sizeof (void *), 16, 0);
-
-    if (unlikely (__input_netif_mq == NULL))
-        {
-        return -1;
-        }
-
     if (unlikely (mutex_init (&__ethifs_lock) != 0))
         {
         return -1;

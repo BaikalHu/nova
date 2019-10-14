@@ -934,13 +934,6 @@ static inline void __ready_q_put (struct task * task, bool head)
 
     task->status = TASK_STATUS_READY;
 
-#if 0
-    if (unlikely (task->status != TASK_STATUS_READY))
-        {
-        return;
-        }
-#endif
-
     if ((ready_q.highest == idle) || (prio < ready_q.highest->c_prio))
         {
         ready_q.highest = task;
@@ -1356,7 +1349,7 @@ static int task_lib_init (void)
 
     __ready_q_init ();
 
-    BUG_ON (task_resume (idle) != 0, "fail to resume idle task!");
+    idle->status = TASK_STATUS_READY;
 
     return 0;
     }

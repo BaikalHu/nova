@@ -58,7 +58,6 @@ struct hal_timer
     {
     dlist_t          node;          /* node to be inserted in the timer list */
     const char     * name;
-    uint8_t          unit;          /* unit number */
     uint8_t          mode;
     bool             busy;          /* timer allocated */
     unsigned long    freq;

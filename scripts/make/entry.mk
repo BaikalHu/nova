@@ -74,11 +74,17 @@ ifeq ($(V),1)
 endif
 
 .PHONY : all
-all : $(outdir)/$(target).elf
-	$(SIZE) $<
+all : $(outdir)/$(target).bin $(outdir)/$(target).hex
+
+$(outdir)/$(target).hex : $(outdir)/$(target).elf
+	$(OBJCOPY) $< $@ -O ihex
+
+$(outdir)/$(target).bin : $(outdir)/$(target).elf
+	$(OBJCOPY) $< $@ -O binary
 
 $(outdir)/$(target).elf : $(objs) $(ld_script)
 	$(CC) $(filter %.o, $^) $(cflags-arch) $(lflags) -o $@
+	$(SIZE) $<
 
 $(outdir)/%.o : %.c
 	$(strip $(CC) $(cflags-common) $(cflags-global) $(cflags-$<) -I$(proj) $(inc-global) $(inc-$(abspath $<)) $< -c -o $@)

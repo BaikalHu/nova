@@ -97,8 +97,6 @@ static const hal_timer_methods_t systick_methods =
 static hal_timer_t systick_timer =
     {
     .name      = "systick",
-    .unit      = 0,
-    .busy      = 0,
     .freq      = CONFIG_SYSTEM_CORE_CLOCK,
     .max_count = SYST_MAX_COUNT,
     .methods   = &systick_methods
